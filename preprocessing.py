@@ -2,11 +2,8 @@ from nltk.tokenize import TweetTokenizer
 
 
 class TextPreprocessor:
-    def __init__(self, text):
-        self.__text = text
-
-    def preprocess(self):
-        tokenized_sent = self.__tokenize(self.__text)
+    def preprocess(self, text):
+        tokenized_sent = self.__tokenize(text)
         return tokenized_sent
 
     def __tokenize(self, sent):
