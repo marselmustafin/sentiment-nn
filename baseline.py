@@ -1,13 +1,13 @@
 import re
-from keras import backend as K
 import ipdb
 import pandas as pd
+import numpy as np
+from sklearn.metrics import classification_report
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from keras.models import Sequential
 from keras.layers import Dense, Embedding, LSTM
 from preprocessing import TextPreprocessor
-from metrics import Metrics
 
 TRAIN_SET = "data/train/twitter-2013train-A.tsv"
 TEST_SET = "data/test/twitter-2013test-A.tsv"
@@ -28,47 +28,48 @@ train_data.text = train_data.text.apply(
 test_data.text = test_data.text.apply(
     (lambda text: " ".join(preprocessor.preprocess(text))))
 
-train_tokenizer = Tokenizer(num_words=2500, split=' ', lower=True)
-train_tokenizer.fit_on_texts(train_data.text.values)
-X_train = train_tokenizer.texts_to_sequences(train_data.text.values)
+tokenizer = Tokenizer(num_words=2500, split=' ', lower=False)
+tokenizer.fit_on_texts(train_data.text.values)
+
+X_train = tokenizer.texts_to_sequences(train_data.text.values)
 X_train = pad_sequences(X_train)
 Y_train = pd.get_dummies(train_data.sentiment).values
 
-test_tokenizer = Tokenizer(num_words=2500, split=' ', lower=True)
-test_tokenizer.fit_on_texts(test_data.text.values)
-X_test = test_tokenizer.texts_to_sequences(test_data.text.values)
+X_test = tokenizer.texts_to_sequences(test_data.text.values)
 X_test = pad_sequences(X_test, maxlen=X_train.shape[1])
 Y_test = pd.get_dummies(test_data.sentiment).values
-
 ipdb.set_trace()
 
-embed_dim = 128
-lstm_out = 300
-batch_size = 32
+# X_train = np.reshape(X_train, (X_train.shape[0], 1, X_train.shape[1]))
+# X_test = np.reshape(X_test, (X_test.shape[0], 1, X_test.shape[1]))
 
-# Buidling the LSTM network
+# ipdb.set_trace()
+
+EMBEDDING_DIM = 128
+LSTM_OUT_DIM = 300
 
 model = Sequential()
-model.add(Embedding(2500, embed_dim,
-                    input_length=X_train.shape[1], dropout=0.1))
-model.add(LSTM(lstm_out, dropout=0.1,
-               recurrent_dropout=0.1, return_sequences=True))
-model.add(LSTM(lstm_out, dropout=0.1,
-               recurrent_dropout=0.1, return_sequences=True))
-model.add(LSTM(3, dropout=0.1,
-               recurrent_dropout=0.1))
-model.compile(loss='categorical_crossentropy',
-              optimizer='adam', metrics=['accuracy', Metrics.precision, Metrics.recall])
+model.add(Embedding(2500, EMBEDDING_DIM,
+                    input_length=X_train.shape[1], dropout=0.2))
+model.add(LSTM(LSTM_OUT_DIM, dropout=0.2,
+               recurrent_dropout=0.2, return_sequences=True))
+model.add(LSTM(LSTM_OUT_DIM, dropout=0.2,
+               recurrent_dropout=0.2, return_sequences=True))
+model.add(LSTM(3))
+# model.add(Dense(3, activation='softmax'))
 
-# Here we train the Network.
+model.compile(loss='categorical_crossentropy', optimizer='adam')
+model.fit(X_train, Y_train, epochs=1, verbose=1)
 
-model.fit(X_train, Y_train, batch_size=batch_size, epochs=1,  verbose=5)
+test_classes = np.argmax(Y_test, axis=1)
+pred_classes = model.predict_classes(X_test)
+target_names = ['negative', 'neutral', 'positive']
+print(classification_report(test_classes, pred_classes, target_names=target_names))
 
-# Measuring score and accuracy on validation set
 
-score, acc, precision, recall = model.evaluate(
-    X_test, Y_test, verbose=2, batch_size=batch_size)
-print("Logloss score: %.2f" % (score))
-print("Validation set Accuracy: %.2f" % (acc))
-print("Validation set Precision: %.2f" % (precision))
-print("Validation set Recall: %.2f" % (recall))
+# score, acc, precision, recall = model.evaluate(
+#     X_test, Y_test, verbose=2)
+# print("Logloss score: %.2f" % (score))
+# print("Validation set Accuracy: %.2f" % (acc))
+# print("Validation set Precision: %.2f" % (precision))
+# print("Validation set Recall: %.2f" % (recall))
