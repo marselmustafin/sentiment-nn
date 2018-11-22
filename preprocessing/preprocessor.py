@@ -4,6 +4,7 @@ from nltk import SnowballStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import TweetTokenizer
 import pandas as pd
+import json
 
 
 class TextPreprocessor:
@@ -21,6 +22,9 @@ class TextPreprocessor:
     # def __stemmize_tokens(self, tokens):
     #     stemmer = SnowballStemmer("english")
     #     return [stemmer.stem(token) for token in tokens]
+
+    # TODO
+    # def summarize_contents(self, tokens):
 
     def remove_stopwords(self, tokens):
         stop_words = set(stopwords.words('english'))
@@ -48,4 +52,4 @@ test_data = pd.read_csv(TEST_SET, sep='\t',
                         usecols=["sentiment", "text"])
 
 pre = TextPreprocessor()
-ipdb.set_trace()
+# ipdb.set_trace()
