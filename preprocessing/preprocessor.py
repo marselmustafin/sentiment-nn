@@ -52,4 +52,3 @@ test_data = pd.read_csv(TEST_SET, sep='\t',
                         usecols=["sentiment", "text"])
 
 pre = TextPreprocessor()
-# ipdb.set_trace()
