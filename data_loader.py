@@ -33,7 +33,7 @@ class DataLoader:
         rows = []
         for f in files:
             rows += self.parse_file(f)
-        return pd.DataFrame(data=rows, columns=["id", "sentiment", "text"])
+        return pd.DataFrame(data=rows, columns=["tweet_id", "sentiment", "text"])
 
     def preprocess_data(self, data):
         return data.apply(
@@ -70,4 +70,3 @@ class DataLoader:
 
 data_loader = DataLoader()
 train, test = data_loader.get_train_test()
-ipdb.set_trace()

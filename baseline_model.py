@@ -7,7 +7,7 @@ from keras.preprocessing.text import Tokenizer
 from sklearn.metrics import classification_report
 
 from data_loader import DataLoader
-import json
+import ipdb
 
 
 class BaselineModel:
@@ -38,11 +38,20 @@ class BaselineModel:
 
         self.model.fit(X_train, Y_train, epochs=1, verbose=1)
 
-        self.print_results(X_test, Y_test, class_count=class_count)
-
-    def print_results(self, X_test, Y_test, class_count=None):
-        test_classes = np.argmax(Y_test, axis=1)
         pred_classes = self.model.predict_classes(X_test)
+
+        self.print_results(pred_classes, Y_test, class_count=class_count)
+        self.save_output_for_scoring(test.tweet_id, pred_classes)
+
+    def save_output_for_scoring(self, test_ids, predictions):
+        class_mappings = {0: "negative", 1: "neutral", 2: "positive"}
+        results = [[tweet_id, class_mappings[sentiment]] for tweet_id, sentiment in zip(test_ids, predictions)]
+        results_pd = pd.DataFrame(data=results)
+        ipdb.set_trace()
+        results_pd.to_csv(path_or_buf="marsel.output", sep="\t", header=None, index=None)
+
+    def print_results(self, pred_classes, Y_test, class_count=None):
+        test_classes = np.argmax(Y_test, axis=1)
         target_names = ['negative', 'neutral', 'positive'] if class_count == 3 else [
             'negative', 'positive']
 
@@ -77,4 +86,4 @@ class BaselineModel:
 
 
 baseline = BaselineModel()
-baseline.run()
+baseline.run(ternary=True)
