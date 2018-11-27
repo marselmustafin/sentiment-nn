@@ -6,38 +6,21 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from sklearn.metrics import classification_report
 
-from preprocessing.preprocessor import TextPreprocessor
+from data_loader import DataLoader
+import json
 
 
 class BaselineModel:
-    TRAIN_DATA_PATH = "data/train/original/twitter-2013train-A.tsv"
-    TEST_DATA_PATH = "data/test/original/twitter-2013test-A.tsv"
-
     EMBEDDING_DIM = 128
     LSTM_OUT_DIM = 300
 
     def __init__(self):
-        self.train_data = self.read_data(self.TRAIN_DATA_PATH)
-        self.test_data = self.read_data(self.TEST_DATA_PATH)
-        self.preprocessor = TextPreprocessor()
-
-    def read_data(self, filename):
-        return pd.read_csv(filename, sep='\t', header=None,
-                           names=["id", "sentiment", "text"],
-                           usecols=["sentiment", "text"])
+        self.data_loader = DataLoader()
 
     def run(self, ternary=False):
-        train = self.train_data
-        test = self.test_data
+        train, test = self.data_loader.get_train_test(ternary=ternary)
 
-        if not ternary:
-            train = self.train_data.loc[lambda df: df.sentiment != "neutral"]
-            test = self.test_data.loc[lambda df: df.sentiment != "neutral"]
-
-        train.text = self.preprocess_data(train.text)
-        test.text = self.preprocess_data(test.text)
-
-        tokenizer = Tokenizer(split=' ', lower=False)
+        tokenizer = Tokenizer(split=' ')
         tokenizer.fit_on_texts(train.text.values)
         vocab_size = len(tokenizer.word_index.keys()) + 1
 
@@ -72,10 +55,6 @@ class BaselineModel:
         Y = pd.get_dummies(dataframe.sentiment).values
 
         return X, Y
-
-    def preprocess_data(self, data):
-        return data.apply(
-            (lambda text: " ".join(self.preprocessor.preprocess(text))))
 
     def compile_model(self, vocab_size=None, input_dim=None, class_count=2):
         model = Sequential()
