@@ -52,52 +52,9 @@ class TextPreprocessor:
                               text)
         return text
 
-<<<<<<< HEAD
-    def summarize_contents(self, text):
-        ipdb.set_trace()
-        for item, regexp in self.regexps.items():
-            ipdb.set_trace()
-            regexp.sub(lambda m: " " + "<" + item + ">" + " ",
-                       text)
-        return text
-=======
     def explain_emoticons(self, tokens):
         return [self.emoticons[w] if w in self.emoticons else w for w in tokens]
->>>>>>> 455405d... Add some improvements
 
-    def remove_stopwords(self, tokens):
-        stop_words = set(stopwords.words('english'))
-        return [token for token in tokens if not token in stop_words]
-
-<<<<<<< HEAD
-    def clean_text(self, text):
-        text = text.rstrip()
-
-        if '""' in text:
-            if text[0] == text[-1] == '"':
-                text = text[1:-1]
-            text = text.replace('\\""', '"')
-            text = text.replace('""', '"')
-
-        text = text.replace('\\""', '"')
-
-        text = html.unescape(text)
-        text = ' '.join(text.split())
-        return text
-
-
-# TEST_SET = "data/train/original/twitter-2013test-A.tsv"
-# test_data = pd.read_csv(TEST_SET, sep='\t',
-#                         header=None, names=["id", "sentiment", "text"],
-#                         usecols=["sentiment", "text"])
-
-pre = TextPreprocessor()
-
-ipdb.set_trace()
-=======
     def load_emoticons(self):
         with open(self.EMOTICONS_PATH) as emoticons:
             return json.load(emoticons)
-
-pre = TextPreprocessor()
->>>>>>> 455405d... Add some improvements

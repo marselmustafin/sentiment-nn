@@ -6,8 +6,6 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from sklearn.metrics import classification_report
 
-import json
-
 
 class BaselineModel:
     EMBEDDING_DIM = 128
@@ -32,7 +30,10 @@ class BaselineModel:
 
         self.model.fit(X_train, Y_train, epochs=1, verbose=1)
 
-        self.print_results(X_test, Y_test, class_count=class_count)
+        pred_classes = self.model.predict_classes(X_test)
+
+        self.print_results(pred_classes, Y_test, class_count=class_count)
+        self.save_output_for_scoring(test.tweet_id, pred_classes)
 
     def compile_model(self, vocab_size=None, input_dim=None, class_count=2):
         model = Sequential()
