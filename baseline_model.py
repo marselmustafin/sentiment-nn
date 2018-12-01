@@ -6,7 +6,6 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from sklearn.metrics import classification_report
 
-from data_loader import DataLoader
 import json
 
 
@@ -14,12 +13,7 @@ class BaselineModel:
     EMBEDDING_DIM = 128
     LSTM_OUT_DIM = 300
 
-    def __init__(self):
-        self.data_loader = DataLoader()
-
-    def run(self, ternary=False):
-        train, test = self.data_loader.get_train_test(ternary=ternary)
-
+    def run(self, train, test, ternary=False):
         tokenizer = Tokenizer(split=' ')
         tokenizer.fit_on_texts(train.text.values)
         vocab_size = len(tokenizer.word_index.keys()) + 1
@@ -40,22 +34,6 @@ class BaselineModel:
 
         self.print_results(X_test, Y_test, class_count=class_count)
 
-    def print_results(self, X_test, Y_test, class_count=None):
-        test_classes = np.argmax(Y_test, axis=1)
-        pred_classes = self.model.predict_classes(X_test)
-        target_names = ['negative', 'neutral', 'positive'] if class_count == 3 else [
-            'negative', 'positive']
-
-        print(classification_report(test_classes,
-                                    pred_classes, target_names=target_names))
-
-    def features_targets(self, dataframe, tokenizer, features_dim=None):
-        X = tokenizer.texts_to_sequences(dataframe.text.values)
-        X = pad_sequences(X, maxlen=features_dim)
-        Y = pd.get_dummies(dataframe.sentiment).values
-
-        return X, Y
-
     def compile_model(self, vocab_size=None, input_dim=None, class_count=2):
         model = Sequential()
 
@@ -75,6 +53,18 @@ class BaselineModel:
 
         return model
 
+    def features_targets(self, dataframe, tokenizer, features_dim=None):
+        X = tokenizer.texts_to_sequences(dataframe.text.values)
+        X = pad_sequences(X, maxlen=features_dim)
+        Y = pd.get_dummies(dataframe.sentiment).values
 
-baseline = BaselineModel()
-baseline.run()
+        return X, Y
+
+    def print_results(self, X_test, Y_test, class_count=None):
+        test_classes = np.argmax(Y_test, axis=1)
+        pred_classes = self.model.predict_classes(X_test)
+        target_names = ['negative', 'neutral', 'positive'] if class_count == 3 else [
+            'negative', 'positive']
+
+        print(classification_report(test_classes,
+                                    pred_classes, target_names=target_names))
