@@ -3,7 +3,7 @@ import html
 from os import listdir
 
 class DataLoader:
-    TRAIN_FILES_PATHS = ["data/train/" + f for f in listdir("data/train")]
+    TRAIN_FILES_PATHS = ["data/train/" + f for f in listdir("data/train")][0:2]
     TEST_FILES_PATHS = [
         "data/test/SemEval2017-task4-test.subtask-A.english.txt"]
 
