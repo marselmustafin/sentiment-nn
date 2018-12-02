@@ -1,8 +1,9 @@
 import pandas as pd
-
+import html
+from os import listdir
 
 class DataLoader:
-    TRAIN_FILES_PATHS = ["data/train/" + f for f in listdir("data/train")][0:2]
+    TRAIN_FILES_PATHS = ["data/train/" + f for f in listdir("data/train")]
     TEST_FILES_PATHS = [
         "data/test/SemEval2017-task4-test.subtask-A.english.txt"]
 
@@ -24,10 +25,11 @@ class DataLoader:
 
         return train, test
 
-    def read_data(self, filename):
-        return pd.read_csv(filename, sep='\t', header=None,
-                           names=["id", "sentiment", "text"],
-                           usecols=["sentiment", "text"])
+    def read_data(self, files):
+        rows = []
+        for f in files:
+            rows += self.parse_file(f)
+        return pd.DataFrame(data=rows, columns=["tweet_id", "sentiment", "text"])
 
     def preprocess_data(self, data):
         return [" ".join(tokens) for tokens in self.preprocessor.pre_process_docs(data)]

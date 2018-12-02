@@ -1,8 +1,5 @@
-import html
 import json
 
-import ipdb
-import pandas as pd
 from nltk.corpus import stopwords
 from nltk.tokenize import TweetTokenizer
 from tqdm import tqdm
@@ -54,6 +51,10 @@ class TextPreprocessor:
 
     def explain_emoticons(self, tokens):
         return [self.emoticons[w] if w in self.emoticons else w for w in tokens]
+
+    def remove_stopwords(self, tokens):
+        stop_words = set(stopwords.words('english'))
+        return [token for token in tokens if not token in stop_words]
 
     def load_emoticons(self):
         with open(self.EMOTICONS_PATH) as emoticons:
