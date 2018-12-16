@@ -4,6 +4,10 @@ from ekphrasis.classes.preprocessor import TextPreProcessor
 from ekphrasis.classes.tokenizer import SocialTokenizer
 from ekphrasis.dicts.emoticons import emoticons
 from preprocessing.preprocessor import TextPreprocessor
+from feature_extraction.feature_extractor import FeatureExtractor
+
+import ipdb
+
 
 preprocessor = TextPreProcessor(
     normalize=['url', 'email', 'percent', 'money', 'phone', 'user', 'time',
@@ -21,11 +25,15 @@ preprocessor = TextPreProcessor(
     tokenizer=SocialTokenizer(lowercase=True).tokenize,
     dicts=[emoticons])
 
-# preprocessor = TextPreprocessor()
-
 model = BaselineModel()
 data_loader = DataLoader(preprocessor)
 
 train, test = data_loader.get_train_test(ternary=True)
 
-model.run(train, test, ternary=True, use_embeddings=True)
+fe = FeatureExtractor()
+
+features = fe.count_features(train)
+test_features = fe.count_features(test)
+
+model.run(train, test, ternary=True, use_embeddings=True, features=features, test_features=test_features)
+ipdb.set_trace()
