@@ -1,11 +1,11 @@
 import numpy as np
 
 class EmbeddingManager:
-    EMBEDDINGS_FILE = "embeddings/datastories.twitter.50d.txt"
+    EMBEDDINGS_FILE = "embeddings/datastories.twitter.300d.txt"
 
     def get_embedding_matrix(self, word_index, embedding_dim):
         embedding_matrix = np.zeros((len(word_index) + 1, embedding_dim))
-        embeddings_index = self.get_emdeddings()
+        embeddings_index = self.get_embeddings()
 
         for word, i in word_index.items():
             embedding_vector = embeddings_index.get(word)
@@ -15,9 +15,9 @@ class EmbeddingManager:
 
         return embedding_matrix
 
-    def get_emdeddings(self):
+    def get_embeddings(self):
         embeddings_index = {}
-        with open(self.EMBEDDINGS_FILE) as f:
+        with open(self.EMBEDDINGS_FILE, encoding="utf-8") as f:
             for line in f:
                 values = line.split()
                 word = values[0]
@@ -26,5 +26,3 @@ class EmbeddingManager:
 
         print('Found %s word vectors.' % len(embeddings_index))
         return embeddings_index
-
-

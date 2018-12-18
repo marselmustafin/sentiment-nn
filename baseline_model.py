@@ -1,3 +1,4 @@
+import ipdb
 import numpy as np
 import pandas as pd
 from keras.layers import LSTM, Embedding, Dropout
@@ -5,11 +6,11 @@ from keras.models import Sequential
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from keras.callbacks import EarlyStopping
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 from embeddings.embedding_manager import EmbeddingManager
 
 class BaselineModel:
-    EMBEDDING_DIM = 50
+    EMBEDDING_DIM = 300
     LSTM_OUT_DIM = 300
 
     def run(self, train, test, ternary=False, use_embeddings=True):
@@ -39,7 +40,7 @@ class BaselineModel:
         earlystop = EarlyStopping(monitor='loss', min_delta=0.0001, patience=2,
                                   verbose=1, mode='auto')
 
-        self.model.fit(X_train, Y_train, callbacks=[earlystop], epochs=1, verbose=1)
+        self.model.fit(X_train, Y_train, callbacks=[earlystop], epochs=10, verbose=1)
 
         pred_classes = self.model.predict_classes(X_test)
 
@@ -64,7 +65,7 @@ class BaselineModel:
 
         model.compile(loss='categorical_crossentropy', optimizer='adam')
 
-        print("%d CLASSIFYING MODEL", class_count)
+        print("CLASSIFYING MODEL", class_count)
         model.summary()
 
         return model
@@ -89,3 +90,4 @@ class BaselineModel:
 
         print(classification_report(test_classes,
                                     pred_classes, target_names=target_names))
+        print(confusion_matrix(test_classes, pred_classes))
