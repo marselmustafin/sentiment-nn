@@ -36,7 +36,8 @@ class BaselineModel:
             vocab_size=vocab_size,
             input_dim=X_train.shape[1],
             class_count=class_count,
-            embedding_matrix=embedding_matrix
+            embedding_matrix=embedding_matrix,
+            features_dim=features.shape[1]
         )
 
         earlystop = EarlyStopping(monitor='loss', min_delta=0.0001, patience=2,
@@ -50,20 +51,15 @@ class BaselineModel:
             verbose=1)
 
         pred_classes = self.model.predict([X_test, test_features], verbose=1)
-
-        ipdb.set_trace()
+        pred_classes = pred_classes.argmax(axis=1)
 
         self.print_results(pred_classes, Y_test, class_count=class_count)
         self.save_output_for_scoring(test.tweet_id, pred_classes)
 
     def compile_model(self, vocab_size=None, input_dim=None,
-                      class_count=2, embedding_matrix=None):
+                      class_count=2, embedding_matrix=None, features_dim=None):
         main_input = Input(shape=(input_dim,), name="main_input")
-        features_input = Input(shape=(4,), name="features_input")
-
-        # lstms = Sequential()
-
-        # lstms.add(main_input)
+        features_input = Input(shape=(features_dim,), name="features_input")
 
         if embedding_matrix is not None:
             emb = Embedding(

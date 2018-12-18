@@ -1,29 +1,16 @@
-import re
-# from nltk.tokenize import TweetTokenizer
 import ipdb
 from collections import Counter
-from string import punctuation
 from math import log2
 import numpy as np
+from feature_extraction.negation_marker import NegationMarker
 
 
-class FeatureExtractor:
-    NEGATIONS = """^(?:never|no|nothing|nowhere|noone|none|not|havent|hasnt|
-                hadnt|cant|cannot|couldnt|shouldnt|wont|wouldnt|dont|doesnt|
-                didnt|isnt|arent|aint)$|.*?n't"""
-    CONTEXT_STOPPERS = "^[.:;,)(!?\"]$|^but$"
-    BACKOFF_TAG = "</?\w.*>"
-    NUM = "\d+"
-
+class FeaturesCounter:
     def __init__(self):
-        self.stoppers = re.compile(self.CONTEXT_STOPPERS)
-        self.negations = re.compile(self.NEGATIONS)
-        self.back_off_tag = re.compile(self.BACKOFF_TAG)
-        self.num = re.compile(self.NUM)
-        self.sentiments = ["positive", "negative"]
+        self.neg_marker = NegationMarker()
 
     def count_features(self, df):
-        marked_docs = [self.mark_negations(doc) for doc in df.text]
+        marked_docs = self.neg_marker.mark_docs_negations(df.text)
         sent_scores = self.count_sent_scores(df)
 
         features = []
@@ -74,8 +61,7 @@ class FeatureExtractor:
 
         for doc, sentiment in zip(df.text, df.sentiment):
             clean = [token for token in doc.split(
-            ) if not self.is_back_off_punct_or_num(token) and
-                token != "but" and not self.negations.match(token)]
+            ) if not self.not_feature_token(token)]
 
             for token in clean:
                 freqs[sentiment][token] += 1
@@ -92,6 +78,9 @@ class FeatureExtractor:
 
         return sent_totals, freqs, set(lexicon)
 
+    def not_feature_token(self, token):
+        return self.neg_marker.is_back_off_punct_or_num(token) and token != "but" and not self.neg_marker.negations.match(token)
+
     def appears_less_than_in_each(self, token, freqs, times=5):
         appears = True
         for sent in list(freqs):
@@ -100,28 +89,3 @@ class FeatureExtractor:
                 break
 
         return appears
-
-    def is_back_off_punct_or_num(self, token):
-        return self.back_off_tag.match(token) or token in punctuation or self.num.match(token)
-
-    def mark_negations(self, doc):
-        self.negated_context = False
-        processed_tokens = [self.process_token(token) for token in doc.split()]
-
-        return processed_tokens
-
-    def process_token(self, token):
-        if not self.negated_context:
-            if self.negations.match(token):
-                self.negated_context = True
-        else:
-            if self.stoppers.match(token):
-                self.negated_context = False
-            elif not (self.is_back_off_punct_or_num(token) or self.negations.match(token)):
-                token = token + "_NEG"
-
-        return token
-
-
-fe = FeatureExtractor()
-# ipdb.set_trace()

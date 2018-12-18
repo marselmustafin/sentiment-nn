@@ -3,10 +3,11 @@ from data.data_loader import DataLoader
 from ekphrasis.classes.preprocessor import TextPreProcessor
 from ekphrasis.classes.tokenizer import SocialTokenizer
 from ekphrasis.dicts.emoticons import emoticons
-from preprocessing.preprocessor import TextPreprocessor
-from feature_extraction.feature_extractor import FeatureExtractor
-
+# from preprocessing.preprocessor import TextPreprocessor
+from feature_extraction.features_counter import FeaturesCounter
+from feature_extraction.manual_features_counter import ManualFeaturesCounter
 import ipdb
+import numpy as np
 
 
 preprocessor = TextPreProcessor(
@@ -30,10 +31,21 @@ data_loader = DataLoader(preprocessor)
 
 train, test = data_loader.get_train_test(ternary=True)
 
-fe = FeatureExtractor()
+fc = FeaturesCounter()
+mfc = ManualFeaturesCounter()
 
-features = fe.count_features(train)
-test_features = fe.count_features(test)
+train_features = fc.count_features(train)
+test_features = fc.count_features(test)
 
-model.run(train, test, ternary=True, use_embeddings=True, features=features, test_features=test_features)
-ipdb.set_trace()
+m_train_features = mfc.get_features(train)
+m_test_features = mfc.get_features(test)
+
+final_train_features = np.concatenate(
+    (train_features, m_train_features), axis=1)
+final_test_features = np.concatenate((test_features, m_test_features), axis=1)
+
+model.run(train, test,
+          ternary=True,
+          use_embeddings=True,
+          features=final_train_features,
+          test_features=final_test_features)
