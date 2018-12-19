@@ -113,7 +113,3 @@ class ManualFeaturesCounter:
             sent_scores[line.strip()] = -1
 
         return sent_scores
-
-
-mfc = ManualFeaturesCounter()
-ipdb.set_trace()

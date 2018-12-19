@@ -36,8 +36,6 @@ mfc = ManualFeaturesCounter()
 train_features = mfc.get_features(train)
 test_features = mfc.get_features(test)
 
-ipdb.set_trace()
-
 model.run(train, test,
           ternary=True,
           use_embeddings=True,
