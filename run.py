@@ -31,21 +31,15 @@ data_loader = DataLoader(preprocessor)
 
 train, test = data_loader.get_train_test(ternary=True)
 
-fc = FeaturesCounter()
 mfc = ManualFeaturesCounter()
 
-train_features = fc.count_features(train)
-test_features = fc.count_features(test)
+train_features = mfc.get_features(train)
+test_features = mfc.get_features(test)
 
-m_train_features = mfc.get_features(train)
-m_test_features = mfc.get_features(test)
-
-final_train_features = np.concatenate(
-    (train_features, m_train_features), axis=1)
-final_test_features = np.concatenate((test_features, m_test_features), axis=1)
+ipdb.set_trace()
 
 model.run(train, test,
           ternary=True,
           use_embeddings=True,
-          features=final_train_features,
-          test_features=final_test_features)
+          features=train_features,
+          test_features=test_features)

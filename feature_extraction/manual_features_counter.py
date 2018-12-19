@@ -2,41 +2,56 @@ import ipdb
 from feature_extraction.negation_marker import NegationMarker
 import numpy as np
 
+
 class ManualFeaturesCounter:
     MPQA_LEXICON_PATH = "feature_extraction/lexicons/subjclueslen1-HLTEMNLP05.tff"
+    NRC_LEXICON_PATH = "feature_extraction/lexicons/NRC_emotion_lexicon_list.txt"
+    BING_LIU_POS_LEXICON_PATH = "feature_extraction/lexicons/positive-words.txt"
+    BING_LIU_NEG_LEXICON_PATH = "feature_extraction/lexicons/negative-words.txt"
 
     def __init__(self):
         self.neg_marker = NegationMarker()
+        self.scores = {"positive": 1, "negative": -1}
 
     def get_features(self, df):
-        marked_docs = self.neg_marker.mark_docs_negations(df.text)
-        sent_scores = self.get_sent_scores()
+        self.marked_docs = self.neg_marker.mark_docs_negations(df.text)
+
+        mpqa_scores = self.get_mpqa_sent_scores()
+        nrc_scores = self.get_nrc_sent_scores()
+        bing_liu_scores = self.get_bing_liu_sent_scores()
+
+        mpqa_feats = self.count_features(mpqa_scores)
+        nrc_feats = self.count_features(nrc_scores)
+        bing_liu_feats = self.count_features(bing_liu_scores)
+
+        return np.concatenate((mpqa_feats, nrc_feats, bing_liu_feats), axis=1)
+
+    def count_features(self, scores):
 
         features = []
 
-        for doc in marked_docs:
+        for doc in self.marked_docs:
             pos_aff = 0
             neg_aff = 0
             pos_neg = 0
             neg_neg = 0
             for token in doc:
                 if token[-3:] == "NEG":
-                    if sent_scores.get(token[:-4], 0) > 0:
-                        pos_neg += sent_scores.get(token[:-4], 0)
+                    if scores.get(token[:-4], 0) > 0:
+                        pos_neg += scores.get(token[:-4], 0)
                     else:
-                        neg_neg += sent_scores.get(token[:-4], 0)
+                        neg_neg += scores.get(token[:-4], 0)
                 else:
-                    if sent_scores.get(token, 0) > 0:
-                        pos_aff += sent_scores.get(token, 0)
+                    if scores.get(token, 0) > 0:
+                        pos_aff += scores.get(token, 0)
                     else:
-                        neg_aff += sent_scores.get(token, 0)
+                        neg_aff += scores.get(token, 0)
             features.append([pos_aff, neg_aff, pos_neg, neg_neg])
 
         return np.array([features])[0]
 
-
-    def get_sent_scores(self):
-        rows = self.read_data()
+    def get_mpqa_sent_scores(self):
+        rows = self.read_mpqa_data()
         sent_scores = {}
 
         for row in rows:
@@ -52,10 +67,10 @@ class ManualFeaturesCounter:
 
         return sent_scores
 
-    def read_data(self):
+    def read_mpqa_data(self):
         rows = []
 
-        for line in open(self.MPQA_LEXICON_PATH, "r", encoding="utf-8").readlines():
+        for line in open(self.MPQA_LEXICON_PATH, "r").readlines():
             pairs = line.split()
 
             word_dict = {}
@@ -68,3 +83,37 @@ class ManualFeaturesCounter:
             rows.append(word_dict)
 
         return rows
+
+    def get_nrc_sent_scores(self):
+        rows = self.read_nrc_data()
+        sent_scores = {}
+
+        for row in rows:
+            if row[1] in self.scores and int(row[2]) is not 0:
+                sent_scores[row[0]] = self.scores[row[1]]
+
+        return sent_scores
+
+    def read_nrc_data(self):
+        rows = []
+
+        for line in open(self.NRC_LEXICON_PATH, "r").readlines():
+            triplet = line.split()
+            rows.append(triplet)
+
+        return rows
+
+    def get_bing_liu_sent_scores(self):
+        sent_scores = {}
+
+        for line in open(self.BING_LIU_POS_LEXICON_PATH, "r").readlines():
+            sent_scores[line.strip()] = 1
+
+        for line in open(self.BING_LIU_NEG_LEXICON_PATH, "r").readlines():
+            sent_scores[line.strip()] = -1
+
+        return sent_scores
+
+
+mfc = ManualFeaturesCounter()
+ipdb.set_trace()
