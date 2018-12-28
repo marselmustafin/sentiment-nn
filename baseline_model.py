@@ -7,7 +7,7 @@ from keras.preprocessing.text import Tokenizer
 from keras.callbacks import EarlyStopping
 from sklearn.metrics import classification_report
 from embeddings.embedding_manager import EmbeddingManager
-import ipdb
+# from layers.elmo_layer import ElmoEmbeddingLayer
 
 
 class BaselineModel:
@@ -58,9 +58,12 @@ class BaselineModel:
 
     def compile_model(self, vocab_size=None, input_dim=None,
                       class_count=2, embedding_matrix=None, features_dim=None):
+
+        # ipdb.set_trace()
         main_input = Input(shape=(input_dim,), name="main_input")
         features_input = Input(shape=(features_dim,), name="features_input")
 
+        # emb = ElmoEmbeddingLayer(300)(main_input)
         if embedding_matrix is not None:
             emb = Embedding(
                 vocab_size,
@@ -72,7 +75,7 @@ class BaselineModel:
             emb = Embedding(vocab_size, self.EMBEDDING_DIM,
                             input_length=input_dim)(main_input)
 
-        drop = Dropout(0.2)(emb)
+        drop = Dropout(0.2, seed=123)(emb)
         lstm1 = LSTM(self.LSTM_OUT_DIM, return_sequences=True)(drop)
         lstm2 = LSTM(int(self.LSTM_OUT_DIM / 2), return_sequences=True)(lstm1)
         lstm3 = LSTM(int(self.LSTM_OUT_DIM / 4))(lstm2)

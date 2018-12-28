@@ -8,7 +8,7 @@ class DataLoader:
     TEST_FILES_PATHS = [
         "data/test/SemEval2017-task4-test.subtask-A.english.txt"]
 
-    def __init__(self, preprocessor):
+    def __init__(self, preprocessor=None):
         self.train_data = self.read_data(self.TRAIN_FILES_PATHS)
         self.test_data = self.read_data(self.TEST_FILES_PATHS)
         self.preprocessor = preprocessor
@@ -21,8 +21,9 @@ class DataLoader:
             train = self.train_data.loc[lambda df: df.sentiment != "neutral"]
             test = self.test_data.loc[lambda df: df.sentiment != "neutral"]
 
-        train.text = self.preprocess_data(train.text)
-        test.text = self.preprocess_data(test.text)
+        if self.preprocessor:
+            train.text = self.preprocess_data(train.text)
+            test.text = self.preprocess_data(test.text)
 
         return train, test
 
