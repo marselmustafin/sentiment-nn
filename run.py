@@ -7,7 +7,6 @@ from feature_extraction.automatic_features_counter import AutomaticFeaturesCount
 from feature_extraction.manual_features_counter import ManualFeaturesCounter
 import numpy as np
 
-
 preprocessor = TextPreProcessor(
     normalize=['url', 'email', 'percent', 'money', 'phone', 'user', 'time',
                'url',
@@ -27,7 +26,7 @@ preprocessor = TextPreProcessor(
 model = BaselineModel()
 data_loader = DataLoader(preprocessor=preprocessor)
 
-train, test = data_loader.get_train_test(ternary=True)
+train, test = data_loader.get_train_test(ternary=False)
 
 mfc = ManualFeaturesCounter()
 afc = AutomaticFeaturesCounter()
@@ -38,11 +37,10 @@ manual_test_features = mfc.get_features(test)
 auto_train_features = afc.get_features(train)
 auto_test_features = afc.get_features(test)
 
-train_features = np.concatenate((manual_train_features, auto_train_features), axis=1)
-test_features = np.concatenate((manual_test_features, auto_test_features), axis=1)
+train_features = np.concatenate(
+    (manual_train_features, auto_train_features), axis=1)
+test_features = np.concatenate(
+    (manual_test_features, auto_test_features), axis=1)
 
-model.run(train, test,
-          ternary=True,
-          use_embeddings=False,
-          features=train_features,
-          test_features=test_features)
+model.run(train, test, features=train_features,
+          test_features=test_features, ternary=False)

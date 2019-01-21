@@ -1,20 +1,19 @@
 import numpy as np
 import pandas as pd
-from keras.layers import LSTM, Embedding, Dropout, Dense, Input, concatenate
-from keras.models import Sequential, Model
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from keras.callbacks import EarlyStopping
 from sklearn.metrics import classification_report
 from embeddings.embedding_manager import EmbeddingManager
-# from layers.elmo_layer import ElmoEmbeddingLayer
+from models.baseline_with_features import BaselineWithFeatures
+from models.elmo import ElmoModel
 
 
 class BaselineModel:
     EMBEDDING_DIM = 50
-    LSTM_OUT_DIM = 300
 
-    def run(self, train, test, ternary=False, use_embeddings=True, features=None, test_features=None):
+    def run(self, train, test, ternary=False, use_embeddings=True,
+            features=None, test_features=None, model=None):
         tokenizer = Tokenizer(split=' ', filters="\n\t")
         tokenizer.fit_on_texts(train.text.values)
         vocab_size = len(tokenizer.word_index) + 1
@@ -32,15 +31,23 @@ class BaselineModel:
         else:
             embedding_matrix = None
 
-        self.model = self.compile_model(
-            vocab_size=vocab_size,
-            input_dim=X_train.shape[1],
-            class_count=class_count,
-            embedding_matrix=embedding_matrix,
-            features_dim=features.shape[1]
-        )
+        if model == "elmo":
+            self.model = ElmoModel().compile(
+                input_dim=X_train.shape[1],
+                class_count=class_count,
+                features_dim=features.shape[1],
+                index_word=tokenizer.index_word
+            )
+        else:
+            self.model = BaselineWithFeatures().compile(
+                vocab_size=vocab_size,
+                input_dim=X_train.shape[1],
+                class_count=class_count,
+                embedding_matrix=embedding_matrix,
+                features_dim=features.shape[1]
+            )
 
-        earlystop = EarlyStopping(monitor='loss', min_delta=0.0001, patience=2,
+        earlystop = EarlyStopping(monitor='loss', min_delta=0.01, patience=2,
                                   verbose=1, mode='auto')
 
         self.model.fit(
@@ -55,43 +62,6 @@ class BaselineModel:
 
         self.print_results(pred_classes, Y_test, class_count=class_count)
         self.save_output_for_scoring(test.tweet_id, pred_classes)
-
-    def compile_model(self, vocab_size=None, input_dim=None,
-                      class_count=2, embedding_matrix=None, features_dim=None):
-
-        # ipdb.set_trace()
-        main_input = Input(shape=(input_dim,), name="main_input")
-        features_input = Input(shape=(features_dim,), name="features_input")
-
-        # emb = ElmoEmbeddingLayer(300)(main_input)
-        if embedding_matrix is not None:
-            emb = Embedding(
-                vocab_size,
-                self.EMBEDDING_DIM,
-                input_length=input_dim,
-                weights=[embedding_matrix],
-                trainable=False)(main_input)
-        else:
-            emb = Embedding(vocab_size, self.EMBEDDING_DIM,
-                            input_length=input_dim)(main_input)
-
-        drop = Dropout(0.2, seed=123)(emb)
-        lstm1 = LSTM(self.LSTM_OUT_DIM, return_sequences=True)(drop)
-        lstm2 = LSTM(int(self.LSTM_OUT_DIM / 2), return_sequences=True)(lstm1)
-        lstm3 = LSTM(int(self.LSTM_OUT_DIM / 4))(lstm2)
-
-        lstms_with_features = concatenate([lstm3, features_input])
-
-        final = Dense(3, activation='softmax')(lstms_with_features)
-
-        model = Model(inputs=[main_input, features_input], outputs=final)
-
-        model.compile(loss='categorical_crossentropy', optimizer='adam')
-
-        print("%d CLASSIFYING MODEL", class_count)
-        model.summary()
-
-        return model
 
     def features_targets(self, dataframe, tokenizer, features_dim=None):
         X = tokenizer.texts_to_sequences(dataframe.text.values)
