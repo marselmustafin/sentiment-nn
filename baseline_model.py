@@ -11,8 +11,14 @@ from models.elmo import ElmoModel
 
 class BaselineModel:
     EMBEDDING_DIM = 50
+    EPOCHS = 1
+    BATCH_SIZE = 32
+    DROPOUT = 0.2
 
-    def run(self, train, test, ternary=False, use_embeddings=True,
+    def __init__(self, logger):
+        self.logger = logger
+
+    def run(self, train, test, ternary=False, use_embeddings=False,
             features=None, test_features=None, model=None):
         tokenizer = Tokenizer(split=' ', filters="\n\t")
         tokenizer.fit_on_texts(train.text.values)
@@ -36,25 +42,42 @@ class BaselineModel:
                 input_dim=X_train.shape[1],
                 class_count=class_count,
                 features_dim=features.shape[1],
-                index_word=tokenizer.index_word
+                index_word=tokenizer.index_word,
+                dropout=self.DROPOUT
             )
         else:
             self.model = BaselineWithFeatures().compile(
                 vocab_size=vocab_size,
                 input_dim=X_train.shape[1],
                 class_count=class_count,
+                features_dim=features.shape[1],
                 embedding_matrix=embedding_matrix,
-                features_dim=features.shape[1]
+                dropout=self.DROPOUT
             )
 
         earlystop = EarlyStopping(monitor='loss', min_delta=0.01, patience=2,
                                   verbose=1, mode='auto')
 
+        self.logger.setup(
+            ternary=ternary,
+            embeddings=use_embeddings,
+            train_set=X_train,
+            test_set=X_test,
+            vocab_size=vocab_size,
+            earlystop=earlystop,
+            epochs=self.EPOCHS,
+            batch_size=self.BATCH_SIZE,
+            dropout=self.DROPOUT
+        )
+
+        self.model.summary(print_fn=self.logger.write)
+
         self.model.fit(
             [X_train, features],
             Y_train,
+            batch_size=self.BATCH_SIZE,
             callbacks=[earlystop],
-            epochs=1,
+            epochs=self.EPOCHS,
             verbose=1)
 
         pred_classes = self.model.predict([X_test, test_features], verbose=1)
@@ -76,7 +99,7 @@ class BaselineModel:
                    for tweet_id, sentiment in zip(test_ids, predictions)]
         results_pd = pd.DataFrame(data=results)
         results_pd.to_csv(
-            path_or_buf="marsel.output",
+            path_or_buf=self.logger.dir + "prediction.output",
             sep="\t",
             header=None,
             index=None)
@@ -89,6 +112,7 @@ class BaselineModel:
             'positive'] if class_count == 3 else [
             'negative',
             'positive']
-
-        print(classification_report(test_classes,
-                                    pred_classes, target_names=target_names))
+        report = classification_report(test_classes,
+                                       pred_classes, target_names=target_names)
+        self.logger.write(report)
+        print(report)

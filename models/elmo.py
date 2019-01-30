@@ -15,21 +15,18 @@ class ElmoModel(object):
                             output_mode="elmo", trainable=True)(main_input)
 
         drop = Dropout(0.5, seed=123)(emb)
-        lstm1 = LSTM(self.LSTM_OUT_DIM, return_sequences=True)(drop)
-        lstm2 = LSTM(self.LSTM_OUT_DIM, return_sequences=True)(lstm1)
-        lstm3 = LSTM(self.LSTM_OUT_DIM)(lstm2)
+        lstm1 = LSTM(self.LSTM_OUT_DIM, return_sequences=False)(drop)
+        # lstm2 = LSTM(self.LSTM_OUT_DIM, return_sequences=True)(lstm1)
+        # lstm3 = LSTM(self.LSTM_OUT_DIM)(lstm2)
 
-        lstms_with_features = concatenate([lstm3, features_input])
+        lstms_with_features = concatenate([lstm1, features_input])
 
-        dense = Dense(100, activation='relu')(lstms_with_features)
+        # dense = Dense(100, activation='relu')(lstms_with_features)
 
-        final = Dense(class_count, activation='softmax')(dense)
+        final = Dense(class_count, activation='softmax')(lstms_with_features)
 
         model = Model(inputs=[main_input, features_input], outputs=final)
 
         model.compile(loss='categorical_crossentropy', optimizer='adam')
-
-        print("{} CLASSIFYING MODEL", class_count)
-        model.summary()
 
         return model

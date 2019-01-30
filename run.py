@@ -5,7 +5,10 @@ from ekphrasis.classes.tokenizer import SocialTokenizer
 from ekphrasis.dicts.emoticons import emoticons
 from feature_extraction.automatic_features_counter import AutomaticFeaturesCounter
 from feature_extraction.manual_features_counter import ManualFeaturesCounter
+from etc.logger import Logger
 import numpy as np
+
+TERNARY = False
 
 preprocessor = TextPreProcessor(
     normalize=['url', 'email', 'percent', 'money', 'phone', 'user', 'time',
@@ -23,10 +26,11 @@ preprocessor = TextPreProcessor(
     tokenizer=SocialTokenizer(lowercase=True).tokenize,
     dicts=[emoticons])
 
-model = BaselineModel()
+logger = Logger()
+model = BaselineModel(logger=logger)
 data_loader = DataLoader(preprocessor=preprocessor)
 
-train, test = data_loader.get_train_test(ternary=False)
+train, test = data_loader.get_train_test(ternary=TERNARY)
 
 mfc = ManualFeaturesCounter()
 afc = AutomaticFeaturesCounter()
@@ -42,5 +46,12 @@ train_features = np.concatenate(
 test_features = np.concatenate(
     (manual_test_features, auto_test_features), axis=1)
 
-model.run(train, test, features=train_features,
-          test_features=test_features, ternary=False)
+logger.pre_setup(preprocessor="ekphrasis",
+                 manual_features=mfc,
+                 auto_features=afc)
+
+model.run(train, test,
+          features=train_features,
+          test_features=test_features,
+          ternary=TERNARY, model=None,
+          use_embeddings=False)
