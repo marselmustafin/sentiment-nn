@@ -24,6 +24,8 @@ class BaselineModel:
         tokenizer.fit_on_texts(train.text.values)
         vocab_size = len(tokenizer.word_index) + 1
 
+        features_dim = features.shape[1] if features else None
+
         X_train, Y_train = self.features_targets(train, tokenizer)
         X_test, Y_test = self.features_targets(
             test, tokenizer, features_dim=X_train.shape[1])
@@ -41,7 +43,7 @@ class BaselineModel:
             self.model = ElmoModel().compile(
                 input_dim=X_train.shape[1],
                 class_count=class_count,
-                features_dim=features.shape[1],
+                features_dim=features_dim,
                 index_word=tokenizer.index_word,
                 dropout=self.DROPOUT
             )
@@ -50,7 +52,7 @@ class BaselineModel:
                 vocab_size=vocab_size,
                 input_dim=X_train.shape[1],
                 class_count=class_count,
-                features_dim=features.shape[1],
+                features_dim=features_dim,
                 embedding_matrix=embedding_matrix,
                 dropout=self.DROPOUT
             )
@@ -72,15 +74,28 @@ class BaselineModel:
 
         self.model.summary(print_fn=self.logger.write)
 
-        self.model.fit(
-            [X_train, features],
-            Y_train,
-            batch_size=self.BATCH_SIZE,
-            callbacks=[earlystop],
-            epochs=self.EPOCHS,
-            verbose=1)
+        if features:
+            self.model.fit(
+                [X_train, features],
+                Y_train,
+                batch_size=self.BATCH_SIZE,
+                callbacks=[earlystop],
+                epochs=self.EPOCHS,
+                verbose=1)
 
-        pred_classes = self.model.predict([X_test, test_features], verbose=1)
+            pred_classes = self.model.predict(
+                [X_test, test_features], verbose=1)
+        else:
+            self.model.fit(
+                X_train,
+                Y_train,
+                batch_size=self.BATCH_SIZE,
+                callbacks=[earlystop],
+                epochs=self.EPOCHS,
+                verbose=1)
+
+            pred_classes = self.model.predict(X_test, verbose=1)
+
         pred_classes = pred_classes.argmax(axis=1)
 
         self.print_results(pred_classes, Y_test, class_count=class_count)

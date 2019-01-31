@@ -8,7 +8,7 @@ from feature_extraction.manual_features_counter import ManualFeaturesCounter
 from etc.logger import Logger
 import numpy as np
 
-TERNARY = False
+TERNARY = True
 
 preprocessor = TextPreProcessor(
     normalize=['url', 'email', 'percent', 'money', 'phone', 'user', 'time',
@@ -51,7 +51,5 @@ logger.pre_setup(preprocessor="ekphrasis",
                  auto_features=afc)
 
 model.run(train, test,
-          features=train_features,
-          test_features=test_features,
-          ternary=TERNARY, model=None,
+          ternary=TERNARY, model="elmo",
           use_embeddings=False)

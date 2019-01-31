@@ -4,7 +4,7 @@ from os import listdir
 
 
 class DataLoader:
-    TRAIN_FILES_PATHS = ["data/train/" + f for f in listdir("data/train")][0:1]
+    TRAIN_FILES_PATHS = ["data/train/" + f for f in listdir("data/train")]
     TEST_FILES_PATHS = [
         "data/test/SemEval2017-task4-test.subtask-A.english.txt"]
 
