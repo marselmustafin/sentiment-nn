@@ -1,4 +1,4 @@
-from baseline_model import BaselineModel
+from runner import Runner
 from data.data_loader import DataLoader
 from ekphrasis.classes.preprocessor import TextPreProcessor
 from ekphrasis.classes.tokenizer import SocialTokenizer
@@ -27,29 +27,27 @@ preprocessor = TextPreProcessor(
     dicts=[emoticons])
 
 logger = Logger()
-model = BaselineModel(logger=logger)
+runner = Runner(logger=logger)
 data_loader = DataLoader(preprocessor=preprocessor)
 
 train, test = data_loader.get_train_test(ternary=TERNARY)
 
-mfc = ManualFeaturesCounter()
-afc = AutomaticFeaturesCounter()
+# mfc = ManualFeaturesCounter()
+# afc = AutomaticFeaturesCounter()
+#
+# manual_train_features = mfc.get_features(train)
+# manual_test_features = mfc.get_features(test)
+#
+# auto_train_features = afc.get_features(train)
+# auto_test_features = afc.get_features(test)
+#
+# train_features = np.concatenate(
+#     (manual_train_features, auto_train_features), axis=1)
+# test_features = np.concatenate(
+#     (manual_test_features, auto_test_features), axis=1)
 
-manual_train_features = mfc.get_features(train)
-manual_test_features = mfc.get_features(test)
+logger.pre_setup(preprocessor="ekphrasis")
 
-auto_train_features = afc.get_features(train)
-auto_test_features = afc.get_features(test)
-
-train_features = np.concatenate(
-    (manual_train_features, auto_train_features), axis=1)
-test_features = np.concatenate(
-    (manual_test_features, auto_test_features), axis=1)
-
-logger.pre_setup(preprocessor="ekphrasis",
-                 manual_features=mfc,
-                 auto_features=afc)
-
-model.run(train, test,
-          ternary=TERNARY, model="elmo",
-          use_embeddings=False)
+runner.run(train, test,
+           ternary=TERNARY, model="elmo",
+           use_embeddings=False)

@@ -9,10 +9,10 @@ from models.baseline_with_features import BaselineWithFeatures
 from models.elmo import ElmoModel
 
 
-class BaselineModel:
+class Runner:
     EMBEDDING_DIM = 50
-    EPOCHS = 1
-    BATCH_SIZE = 32
+    EPOCHS = 10
+    BATCH_SIZE = 16
     DROPOUT = 0.2
 
     def __init__(self, logger):

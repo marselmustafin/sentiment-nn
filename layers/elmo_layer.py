@@ -27,7 +27,7 @@ class ELMoEmbedding(Layer):
         self.word_mapping = [x[1] for x in sorted(
             self.idx2word.items(), key=lambda x: x[0])]
         self.lookup_table = tf.contrib.lookup.index_to_string_table_from_tensor(
-            self.word_mapping, default_value="<UNK>")
+                self.word_mapping, default_value="<UNK>")
         self.lookup_table.init.run(session=K.get_session())
         self.elmo_model = hub.Module(
             "https://tfhub.dev/google/elmo/2", trainable=self.trainable)
