@@ -1,7 +1,7 @@
 import numpy as np
 
 class EmbeddingManager:
-    EMBEDDINGS_FILE = "embeddings/datastories.twitter.50d.txt"
+    EMBEDDINGS_FILE = "embeddings/datastories.twitter.300d.txt"
 
     def get_embedding_matrix(self, word_index, embedding_dim):
         embedding_matrix = np.zeros((len(word_index) + 1, embedding_dim))

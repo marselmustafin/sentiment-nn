@@ -11,7 +11,7 @@ class BaselineWithFeatures(object):
                 dropout=0.2):
 
         main_input = Input(shape=(input_dim,), name="main_input")
-        features_input = Input(shape=(features_dim,), name="features_input")
+        # features_input = Input(shape=(features_dim,), name="features_input")
 
         if embedding_matrix is not None:
             emb = Embedding(
@@ -29,13 +29,13 @@ class BaselineWithFeatures(object):
         lstm2 = LSTM(int(self.LSTM_OUT_DIM), return_sequences=True)(lstm1)
         lstm3 = LSTM(int(self.LSTM_OUT_DIM))(lstm2)
 
-        lstms_with_features = concatenate([lstm3, features_input])
+        # lstms_with_features = concatenate([lstm3, features_input])
 
-        dense = Dense(100, activation='relu')(lstms_with_features)
+        dense = Dense(100, activation='relu')(lstm3)
 
         final = Dense(class_count, activation='softmax')(dense)
 
-        model = Model(inputs=[main_input, features_input], outputs=final)
+        model = Model(inputs=[main_input], outputs=final)
 
         model.compile(loss='categorical_crossentropy', optimizer='adam')
 

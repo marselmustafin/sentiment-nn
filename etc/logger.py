@@ -7,7 +7,7 @@ class Logger:
     MODEL_SUMMARY_FILENAME = "summary.txt"
 
     def __init__(self):
-        self.dir = self.RESULTS_DIR + str(dt.now()) + "/"
+        self.dir = self.RESULTS_DIR + "-".join(str(dt.now()).split()) + "/"
         self.summary_file = self.dir + self.MODEL_SUMMARY_FILENAME
 
         self.init_directory(self.dir)
@@ -37,12 +37,8 @@ class Logger:
         self.write("====================\n")
 
     def init_directory(self, path):
-        try:
-            return os.mkdir(path)
-        except OSError:
-            print("Creation of the directory %s failed" % path)
-        else:
-            print("Successfully created the directory %s " % path)
+        command = "sudo mkdir -p %s" % path
+        return os.system(command)
 
     def write(self, text):
         with open(self.summary_file, "a") as myfile:

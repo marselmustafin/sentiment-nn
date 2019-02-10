@@ -10,10 +10,10 @@ from models.elmo import ElmoModel
 
 
 class Runner:
-    EMBEDDING_DIM = 50
+    EMBEDDING_DIM = 300
     EPOCHS = 10
-    BATCH_SIZE = 16
-    DROPOUT = 0.2
+    BATCH_SIZE = 32
+    DROPOUT = 0.5
 
     def __init__(self, logger):
         self.logger = logger

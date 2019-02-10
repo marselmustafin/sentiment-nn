@@ -49,5 +49,5 @@ train, test = data_loader.get_train_test(ternary=TERNARY)
 logger.pre_setup(preprocessor="ekphrasis")
 
 runner.run(train, test,
-           ternary=TERNARY, model="elmo",
-           use_embeddings=False)
+           ternary=TERNARY, 
+           use_embeddings=True)
