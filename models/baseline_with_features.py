@@ -3,12 +3,11 @@ from keras.models import Model
 
 
 class BaselineWithFeatures(object):
-    EMBEDDING_DIM = 50
     LSTM_OUT_DIM = 300
 
     def compile(self, vocab_size=None, input_dim=None,
-                class_count=2, embedding_matrix=None, features_dim=None,
-                dropout=0.2):
+                class_count=2, embedding_matrix=None, embedding_dim=None,
+                features_dim=None, dropout=0.2):
 
         main_input = Input(shape=(input_dim,), name="main_input")
         # features_input = Input(shape=(features_dim,), name="features_input")
@@ -16,12 +15,12 @@ class BaselineWithFeatures(object):
         if embedding_matrix is not None:
             emb = Embedding(
                 vocab_size,
-                self.EMBEDDING_DIM,
+                embedding_dim,
                 input_length=input_dim,
                 weights=[embedding_matrix],
                 trainable=False)(main_input)
         else:
-            emb = Embedding(vocab_size, self.EMBEDDING_DIM,
+            emb = Embedding(vocab_size, embedding_dim,
                             input_length=input_dim)(main_input)
 
         drop = Dropout(dropout, seed=123)(emb)

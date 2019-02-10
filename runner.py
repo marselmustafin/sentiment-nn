@@ -54,6 +54,7 @@ class Runner:
                 class_count=class_count,
                 features_dim=features_dim,
                 embedding_matrix=embedding_matrix,
+                embedding_dim=self.EMBEDDING_DIM,
                 dropout=self.DROPOUT
             )
 

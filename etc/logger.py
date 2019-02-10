@@ -37,7 +37,7 @@ class Logger:
         self.write("====================\n")
 
     def init_directory(self, path):
-        command = "sudo mkdir -p %s" % path
+        command = "mkdir -p %s" % path
         return os.system(command)
 
     def write(self, text):
