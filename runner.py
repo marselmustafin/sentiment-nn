@@ -3,7 +3,7 @@ import pandas as pd
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from keras.callbacks import EarlyStopping
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 from embeddings.embedding_manager import EmbeddingManager
 from models.baseline_with_features import BaselineWithFeatures
 from models.elmo import ElmoModel
@@ -131,4 +131,5 @@ class Runner:
         report = classification_report(test_classes,
                                        pred_classes, target_names=target_names)
         self.logger.write(report)
+        self.logger.write(confusion_matrix(test_classes, pred_classes))
         print(report)
