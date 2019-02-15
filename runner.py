@@ -24,7 +24,7 @@ class Runner:
         tokenizer.fit_on_texts(train.text.values)
         vocab_size = len(tokenizer.word_index) + 1
 
-        features_dim = features.shape[1] if features else None
+        features_dim = features.shape[1] if features is not None else None
 
         X_train, Y_train = self.features_targets(train, tokenizer)
         X_test, Y_test = self.features_targets(
@@ -70,12 +70,12 @@ class Runner:
             earlystop=earlystop,
             epochs=self.EPOCHS,
             batch_size=self.BATCH_SIZE,
-            dropout=self.DROPOUT
+            dropout=self.DROPOUT,
         )
 
         self.model.summary(print_fn=self.logger.write)
 
-        if features:
+        if features is not None:
             self.model.fit(
                 [X_train, features],
                 Y_train,

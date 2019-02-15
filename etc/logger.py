@@ -11,14 +11,7 @@ class Logger:
         self.summary_file = self.dir + self.MODEL_SUMMARY_FILENAME
 
         self.init_directory(self.dir)
-
-    def pre_setup(self, preprocessor=None, manual_features=None,
-                  auto_features=None):
         self.write("=== MODEL SETUP ===\n")
-        self.write("preprocessing: %s" % (True if preprocessor else False))
-        self.write(
-            "manual features: %s" % (True if manual_features else False))
-        self.write("auto_features: %s" % (True if auto_features else False))
 
     def setup(self, ternary=False, embeddings=False, train_set=None,
               test_set=None, vocab_size=0, earlystop=None,
@@ -43,9 +36,3 @@ class Logger:
     def write(self, text):
         with open(self.summary_file, "a") as myfile:
             myfile.write(text + "\n")
-
-
-# logger = Logger()
-# logger.pre_setup(preprocessor="ekphrasis",
-#                  manual_features=True, auto_features=True)
-# print(logger.RESULTS_DIR)

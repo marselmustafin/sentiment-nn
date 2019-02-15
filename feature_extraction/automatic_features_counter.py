@@ -1,58 +1,106 @@
-from collections import Counter
-from math import log2
 import numpy as np
 import pandas as pd
 from feature_extraction.negation_marker import NegationMarker
+from itertools import tee
 
 
 class AutomaticFeaturesCounter:
+    HS_LEXICON_UNIGRAM_SCORES_PATH = \
+        "feature_extraction/lexicons/HS-AFFLEX-NEGLEX-unigrams.txt"
+    HS_LEXICON_BIGRAM_SCORES_PATH = \
+        "feature_extraction/lexicons/HS-AFFLEX-NEGLEX-bigrams.txt"
+    LEXICON_140_UNIGRAM_SCORES_PATH = \
+        "feature_extraction/lexicons/Emoticon-AFFLEX-NEGLEX-unigrams.txt"
+    LEXICON_140_BIGRAM_SCORES_PATH = \
+        "feature_extraction/lexicons/Emoticon-AFFLEX-NEGLEX-bigrams.txt"
+
     def __init__(self):
         self.neg_marker = NegationMarker()
 
     def get_features(self, df):
         self.marked_docs = self.neg_marker.mark_docs_negations(df.text)
 
-        aff_scores = self.get_aff_scores()
-        neg_scores = self.get_neg_scores()
+        uni_hs_scores = \
+            self.get_uni_scores(self.HS_LEXICON_UNIGRAM_SCORES_PATH)
+        uni_140_scores = \
+            self.get_uni_scores(self.LEXICON_140_UNIGRAM_SCORES_PATH)
 
-        return self.count_features(aff_scores, neg_scores)
+        uni_hs_features = self.count_uni_feats(uni_hs_scores)
+        uni_140_features = self.count_uni_feats(uni_140_scores)
 
-    def count_features(self, aff_scores, neg_scores):
+        big_hs_scores = \
+            self.get_big_scores(self.HS_LEXICON_BIGRAM_SCORES_PATH)
+        big_140_scores = \
+            self.get_big_scores(self.LEXICON_140_BIGRAM_SCORES_PATH)
+
+        big_hs_features = self.count_big_feats(big_hs_scores)
+        big_140_features = self.count_big_feats(big_140_scores)
+
+        features = np.concatenate((uni_hs_features, uni_140_features,
+                                  big_hs_features, big_140_features), axis=1)
+
+        return features
+
+    def count_uni_feats(self, scores):
         features = []
 
         for doc in self.marked_docs:
-            not_zero_count = 0
-            overall_score = 0
-            scores = []
+            doc_scores = []
+
             for token in doc:
-                if token[-3:] == "NEG":
-                    score = neg_scores.get(token[:-4], 0)
-                else:
-                    score = aff_scores.get(token, 0)
-                scores.append(score)
+                score = scores.get(token, 0)
 
-                if score != 0:
-                    not_zero_count += 1
-                    overall_score += score
+                if score == 0 and token[-8:] == "NEGFIRST":
+                    score = scores.get(token[:-5], 0)
 
-            features.append([not_zero_count, overall_score, max(scores), scores[-1]])
+                doc_scores.append(score)
+
+            features.append([np.count_nonzero(doc_scores), sum(doc_scores),
+                            max(doc_scores), doc_scores[-1]])
 
         return np.array([features])[0]
 
-    def get_aff_scores(self):
-        data = pd.read_csv("feature_extraction/lexicons/aff_140_lex_scores.csv", header=None, names=[
-                           "word", "score"])
+    def count_big_feats(self, scores):
+        features = []
+
+        for doc in self.marked_docs:
+            doc_scores = [scores.get((w1, w2), 0)
+                          for w1, w2 in self.pairwise(doc)]
+
+            # for preventing one word messages
+            if doc_scores == []:
+                doc_scores = [0]
+
+            features.append([np.count_nonzero(doc_scores), sum(doc_scores),
+                            max(doc_scores), doc_scores[-1]])
+
+        return np.array([features])[0]
+
+    def pairwise(self, iterable):
+        "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+        a, b = tee(iterable)
+        next(b, None)
+        return zip(a, b)
+
+    def get_uni_scores(self, path):
+        data = pd.read_csv(path, sep="\t", header=None,
+                           names=["word", "score", "pc", "nc"], quoting=3)
+
         scores = {}
+
         for word, score in zip(data.word, data.score):
             scores[word] = score
 
         return scores
 
-    def get_neg_scores(self):
-        data = pd.read_csv("feature_extraction/lexicons/neg_140_lex_scores.csv", header=None, names=[
-                           "word", "score"])
+    def get_big_scores(self, path):
+        data = pd.read_csv(path, sep="\t", header=None,
+                           names=["pair", "score", "pc", "nc"],
+                           quoting=3)
+
         scores = {}
-        for word, score in zip(data.word, data.score):
-            scores[word] = score
+
+        for pair, score in zip(data.pair, data.score):
+            scores[tuple(pair.split())] = score
 
         return scores
