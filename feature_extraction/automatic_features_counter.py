@@ -41,9 +41,7 @@ class AutomaticFeaturesCounter:
         features = np.concatenate((uni_hs_features, uni_140_features,
                                   big_hs_features, big_140_features), axis=1)
 
-        scaled_features = self.scaler.fit_transform(features)
-
-        return scaled_features
+        return features
 
     def count_uni_feats(self, scores):
         features = []
