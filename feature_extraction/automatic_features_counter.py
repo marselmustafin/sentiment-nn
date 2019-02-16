@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from feature_extraction.negation_marker import NegationMarker
 from itertools import tee
+from sklearn.preprocessing import MinMaxScaler
 
 
 class AutomaticFeaturesCounter:
@@ -16,6 +17,7 @@ class AutomaticFeaturesCounter:
 
     def __init__(self):
         self.neg_marker = NegationMarker()
+        self.scaler = MinMaxScaler()
 
     def get_features(self, df):
         self.marked_docs = self.neg_marker.mark_docs_negations(df.text)
@@ -39,7 +41,9 @@ class AutomaticFeaturesCounter:
         features = np.concatenate((uni_hs_features, uni_140_features,
                                   big_hs_features, big_140_features), axis=1)
 
-        return features
+        scaled_features = self.scaler.fit_transform(features)
+
+        return scaled_features
 
     def count_uni_feats(self, scores):
         features = []

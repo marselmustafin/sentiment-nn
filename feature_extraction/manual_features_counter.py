@@ -56,9 +56,9 @@ class ManualFeaturesCounter:
 
         for row in rows:
             if row['type'][:6] == "strong":
-                score = 1
-            elif row['type'][:4] == "weak":
                 score = 2
+            elif row['type'][:4] == "weak":
+                score = 1
 
             if row['priorpolarity'] == "negative":
                 score *= -1
@@ -85,23 +85,16 @@ class ManualFeaturesCounter:
         return rows
 
     def get_nrc_sent_scores(self):
-        rows = self.read_nrc_data()
-        sent_scores = {}
-
-        for row in rows:
-            if row[1] in self.scores and int(row[2]) is not 0:
-                sent_scores[row[0]] = self.scores[row[1]]
-
-        return sent_scores
-
-    def read_nrc_data(self):
-        rows = []
+        scores = {}
 
         for line in open(self.NRC_LEXICON_PATH, "r").readlines():
             triplet = line.split()
-            rows.append(triplet)
+            if triplet[1] == "positive" and triplet[2] == "1":
+                scores[triplet[0]] = 1
+            elif triplet[1] == "negative" and triplet[2] == "1":
+                scores[triplet[0]] = -1
 
-        return rows
+        return scores
 
     def get_bing_liu_sent_scores(self):
         sent_scores = {}
