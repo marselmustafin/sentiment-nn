@@ -8,6 +8,7 @@ from feature_extraction.feature_extractor import FeatureExtractor
 
 TERNARY = True
 
+# preprocessor for training/test
 preprocessor = TextPreProcessor(
     normalize=['url', 'email', 'percent', 'money', 'phone', 'user', 'time',
                'date', 'number'],
@@ -22,6 +23,7 @@ preprocessor = TextPreProcessor(
     tokenizer=SocialTokenizer(lowercase=True).tokenize,
     dicts=[emoticons])
 
+# preprocessor for features extracting
 feature_preprocessor = TextPreProcessor(
     normalize=['url', 'email', 'percent', 'money', 'phone', 'user', 'time',
                'date', 'number'],
@@ -39,19 +41,21 @@ runner = Runner(logger=logger)
 logger.write("preprocessing: %s" % (True if preprocessor else False))
 
 data_loader = DataLoader(preprocessor=preprocessor)
-feature_data_loader = DataLoader(preprocessor=feature_preprocessor)
-
 train, test = data_loader.get_train_test(ternary=TERNARY)
 
-f_train, f_test = feature_data_loader.get_train_test(ternary=TERNARY)
+feature_data_loader = DataLoader(preprocessor=feature_preprocessor)
+feature_extractor = FeatureExtractor(data_loader=feature_data_loader,
+                                     logger=logger)
 
-feature_extractor = FeatureExtractor(logger=logger)
-
-tr_feats = feature_extractor.get_features(f_train)
-te_feats = feature_extractor.get_features(f_test)
+train_feats, test_feats = feature_extractor.get_train_test_features(
+    ternary=TERNARY,
+    manual=False,
+    auto=False,
+    scaled=False)
 
 runner.run(train, test,
            ternary=TERNARY,
-           features=tr_feats,
-           test_features=te_feats,
-           use_embeddings=True)
+           features=train_feats,
+           test_features=test_feats,
+           model="elmo",
+           use_embeddings=False)

@@ -131,5 +131,6 @@ class Runner:
         report = classification_report(test_classes,
                                        pred_classes, target_names=target_names)
         self.logger.write(report)
-        self.logger.write(np.array2string(confusion_matrix(test_classes, pred_classes)))
+        self.logger.write(np.array2string(confusion_matrix(test_classes,
+                                                           pred_classes)))
         print(report)
