@@ -7,6 +7,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 from embeddings.embedding_manager import EmbeddingManager
 from models.baseline_with_features import BaselineWithFeatures
 from models.elmo import ElmoModel
+from models.bidirectional_attention import BidirectionalAttention
 
 
 class Runner:
@@ -45,6 +46,16 @@ class Runner:
                 class_count=class_count,
                 features_dim=features_dim,
                 index_word=tokenizer.index_word,
+                dropout=self.DROPOUT
+            )
+        elif model == "bid_attent":
+            self.model = BidirectionalAttention().compile(
+                vocab_size=vocab_size,
+                input_dim=X_train.shape[1],
+                class_count=class_count,
+                features_dim=features_dim,
+                embedding_matrix=embedding_matrix,
+                embedding_dim=self.EMBEDDING_DIM,
                 dropout=self.DROPOUT
             )
         else:

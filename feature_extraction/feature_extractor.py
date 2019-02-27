@@ -19,7 +19,7 @@ class FeatureExtractor:
             f_train, f_test = self.data_loader.get_train_test(ternary=ternary)
             self.manual = manual
             self.auto = auto
-            self.scaled
+            self.scaled = scaled
             return self.get_features(f_train), self.get_features(f_test)
         else:
             return None, None

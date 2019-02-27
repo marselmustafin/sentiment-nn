@@ -55,7 +55,5 @@ train_feats, test_feats = feature_extractor.get_train_test_features(
 
 runner.run(train, test,
            ternary=TERNARY,
-           features=train_feats,
-           test_features=test_feats,
-           model="elmo",
-           use_embeddings=False)
+           model="bid_attent",
+           use_embeddings=True)

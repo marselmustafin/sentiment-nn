@@ -1,13 +1,16 @@
-import ipdb
 from feature_extraction.negation_marker import NegationMarker
 import numpy as np
 
 
 class ManualFeaturesCounter:
-    MPQA_LEXICON_PATH = "feature_extraction/lexicons/subjclueslen1-HLTEMNLP05.tff"
-    NRC_LEXICON_PATH = "feature_extraction/lexicons/NRC_emotion_lexicon_list.txt"
-    BING_LIU_POS_LEXICON_PATH = "feature_extraction/lexicons/positive-words.txt"
-    BING_LIU_NEG_LEXICON_PATH = "feature_extraction/lexicons/negative-words.txt"
+    MPQA_LEXICON_PATH = \
+        "feature_extraction/lexicons/subjclueslen1-HLTEMNLP05.tff"
+    NRC_LEXICON_PATH = \
+        "feature_extraction/lexicons/NRC_emotion_lexicon_list.txt"
+    BING_LIU_POS_LEXICON_PATH = \
+        "feature_extraction/lexicons/positive-words.txt"
+    BING_LIU_NEG_LEXICON_PATH = \
+        "feature_extraction/lexicons/negative-words.txt"
 
     def __init__(self):
         self.neg_marker = NegationMarker()
