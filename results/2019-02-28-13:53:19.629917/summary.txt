@@ -1,0 +1,48 @@
+=== MODEL SETUP ===
+
+preprocessing: True
+classification: ternary
+Twitter embeddings: True
+Train set size: 50334
+Test set size: 12284
+Vocabulary size: 39905
+earlystop | monitor: loss, min_delta: -0.01, patience: 2
+epochs: 50
+batch_size: 50
+dropout: 0.5
+====================
+
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+main_input (InputLayer)      (None, 67)                0         
+_________________________________________________________________
+embedding_1 (Embedding)      (None, 67, 300)           11971500  
+_________________________________________________________________
+dropout_1 (Dropout)          (None, 67, 300)           0         
+_________________________________________________________________
+bidirectional_1 (Bidirection (None, 67, 300)           541200    
+_________________________________________________________________
+bidirectional_2 (Bidirection (None, 67, 300)           541200    
+_________________________________________________________________
+attention_1 (Attention)      (None, 300)               367       
+_________________________________________________________________
+dense_1 (Dense)              (None, 3)                 903       
+=================================================================
+Total params: 13,055,170
+Trainable params: 1,083,670
+Non-trainable params: 11,971,500
+_________________________________________________________________
+              precision    recall  f1-score   support
+
+    negative       0.66      0.59      0.62      3972
+     neutral       0.64      0.62      0.63      5937
+    positive       0.53      0.66      0.59      2375
+
+   micro avg       0.62      0.62      0.62     12284
+   macro avg       0.61      0.62      0.61     12284
+weighted avg       0.62      0.62      0.62     12284
+
+[[2344 1358  270]
+ [1125 3693 1119]
+ [ 101  705 1569]]

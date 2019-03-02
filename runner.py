@@ -12,8 +12,8 @@ from models.bidirectional_attention import BidirectionalAttention
 
 class Runner:
     EMBEDDING_DIM = 300
-    EPOCHS = 10
-    BATCH_SIZE = 32
+    EPOCHS = 50
+    BATCH_SIZE = 50
     DROPOUT = 0.5
 
     def __init__(self, logger):
