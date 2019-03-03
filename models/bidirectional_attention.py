@@ -1,8 +1,9 @@
 from keras.layers import LSTM, Embedding, Dropout, Dense, Input, concatenate, \
-    Bidirectional
+    Bidirectional, GaussianNoise
 from keras.models import Model
 from layers.attention import Attention
-
+from keras.optimizers import Adam
+from keras.regularizers import l2
 
 class BidirectionalAttention(object):
     LSTM_OUT_DIM = 150
@@ -24,10 +25,14 @@ class BidirectionalAttention(object):
             emb = Embedding(vocab_size, embedding_dim,
                             input_length=input_dim)(main_input)
 
-        drop = Dropout(dropout, seed=123)(emb)
-        lstm1 = Bidirectional(LSTM(self.LSTM_OUT_DIM, return_sequences=True))(drop)
-        lstm2 = Bidirectional(LSTM(self.LSTM_OUT_DIM, return_sequences=True))(lstm1)
-        attention = Attention()(lstm2)
+        gn = GaussianNoise(0.3)(emb)
+        drop1 = Dropout(0.3, seed=123)(emb)
+        lstm1 = Bidirectional(LSTM(self.LSTM_OUT_DIM, return_sequences=True))(drop1)
+        drop2 = Dropout(0.3, seed=123)(lstm1)
+        lstm2 = Bidirectional(LSTM(self.LSTM_OUT_DIM, return_sequences=True))(drop2)
+        drop3 = Dropout(0.3, seed=123)(lstm2)
+        attention = Attention()(drop3)
+        drop4 = Dropout(0.5, seed=123)(attention)
 
         if features_dim is not None:
             features_input = \
@@ -38,9 +43,10 @@ class BidirectionalAttention(object):
             final = Dense(class_count, activation='softmax')(dense)
             model = Model(inputs=[main_input, features_input], outputs=final)
         else:
-            final = Dense(class_count, activation='softmax')(attention)
+            final = Dense(class_count, activation='softmax', activity_regularizer=l2(0.0001))(drop4)
             model = Model(inputs=[main_input], outputs=final)
 
-        model.compile(loss='categorical_crossentropy', optimizer='adam')
+        model.compile(optimizer=Adam(clipnorm=1, lr=0.001),
+                      loss='categorical_crossentropy')
 
         return model
