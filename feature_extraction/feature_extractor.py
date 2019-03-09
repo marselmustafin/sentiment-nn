@@ -1,7 +1,8 @@
-from feature_extraction.automatic_features_counter import AutomaticFeaturesCounter
-from feature_extraction.manual_features_counter import ManualFeaturesCounter
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+from feature_extraction.automatic_features_counter import \
+    AutomaticFeaturesCounter
+from feature_extraction.manual_features_counter import ManualFeaturesCounter
 
 
 class FeatureExtractor:
@@ -38,7 +39,12 @@ class FeatureExtractor:
         self.logger.write("auto_features: %s" % self.auto)
         self.logger.write("min-max scaling: %s" % self.scaled)
 
-        features = np.concatenate((manual_features, auto_features), axis=1)
+        if self.manual_features.size != 0 and self.auto_features.size != 0:
+            features = np.concatenate((manual_features, auto_features), axis=1)
+        elif self.manual_features !=0:
+            features = self.manual_features
+        elif self.auto_features != 0:
+            features = self.auto_features
 
         if self.scaled:
             return self.scaler.fit_transform(features)
