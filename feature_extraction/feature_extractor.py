@@ -39,12 +39,12 @@ class FeatureExtractor:
         self.logger.write("auto_features: %s" % self.auto)
         self.logger.write("min-max scaling: %s" % self.scaled)
 
-        if self.manual_features.size != 0 and self.auto_features.size != 0:
+        if manual_features.size != 0 and auto_features.size != 0:
             features = np.concatenate((manual_features, auto_features), axis=1)
-        elif self.manual_features !=0:
-            features = self.manual_features
-        elif self.auto_features != 0:
-            features = self.auto_features
+        elif manual_features.size !=0:
+            features = manual_features
+        elif auto_features.size != 0:
+            features = auto_features
 
         if self.scaled:
             return self.scaler.fit_transform(features)
