@@ -1,3 +1,0 @@
-=== MODEL SETUP ===
-
-preprocessing: True

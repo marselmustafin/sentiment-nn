@@ -25,7 +25,7 @@ class DataLoader:
             train.text = self.preprocess_data(train.text)
             test.text = self.preprocess_data(test.text)
 
-        return train, test
+        return train.sample(frac=1), test
 
     def read_data(self, files):
         rows = []

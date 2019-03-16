@@ -10,6 +10,7 @@ TERNARY = True
 
 # preprocessor for training/test
 preprocessor = TextPreProcessor(
+
     normalize=['url', 'email', 'percent', 'money', 'phone', 'user', 'time',
                'date', 'number'],
     annotate={"hashtag", "allcaps", "elongated", "repeated", 'emphasis',

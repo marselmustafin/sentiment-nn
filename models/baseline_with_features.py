@@ -24,7 +24,8 @@ class BaselineWithFeatures(object):
 
         drop = Dropout(dropout, seed=123)(emb)
         lstm1 = LSTM(self.LSTM_OUT_DIM, return_sequences=True)(drop)
-        lstm3 = LSTM(int(self.LSTM_OUT_DIM))(lstm1)
+        lstm2 = LSTM(self.LSTM_OUT_DIM, return_sequences=True)(lstm1)
+        lstm3 = LSTM(int(self.LSTM_OUT_DIM))(lstm2)
 
         if features_dim is not None:
             features_input = \
@@ -35,8 +36,8 @@ class BaselineWithFeatures(object):
             final = Dense(class_count, activation='softmax')(dense)
             model = Model(inputs=[main_input, features_input], outputs=final)
         else:
-            dense = Dense(100, activation='relu')(lstm3)
-            final = Dense(class_count, activation='softmax')(dense)
+            pre_final = Dense(100, activation='relu')(lstm3)
+            final = Dense(class_count, activation='softmax')(pre_final)
             model = Model(inputs=[main_input], outputs=final)
 
         model.compile(loss='categorical_crossentropy', optimizer='adam')

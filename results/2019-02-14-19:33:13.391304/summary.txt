@@ -1,5 +1,0 @@
-=== MODEL SETUP ===
-
-preprocessing: True
-manual features: False
-auto_features: False
