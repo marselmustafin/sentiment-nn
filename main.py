@@ -49,7 +49,7 @@ feature_extractor = FeatureExtractor(data_loader=feature_data_loader,
 
 train_feats, test_feats = feature_extractor.get_train_test_features(
     ternary=TERNARY,
-    manual=True,
+    manual=False,
     auto=False,
     scaled=False)
 
