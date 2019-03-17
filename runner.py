@@ -24,16 +24,21 @@ class Runner:
             features=None, test_features=None, model=None, extra_train=None):
         self.tokenizer.fit_on_texts(train.text.values)
 
-        if extra_train is not None:
-            self.tokenizer.fit_on_texts(extra_train.text.values)
-
-        vocab_size = len(self.tokenizer.word_index) + 1
-
         features_dim = features.shape[1] if features is not None else None
 
         X_train, Y_train = self.get_features_targets(train)
         X_test, Y_test = self.get_features_targets(
             test, features_dim=X_train.shape[1])
+
+        if extra_train is not None:
+            self.tokenizer.fit_on_texts(extra_train.text.values)
+            X_extra_train, Y_extra_train \
+                = self.get_features_targets(extra_train)
+            if X_extra_train.shape[1] > X_train.shape[1]:
+                X_train = pad_sequences(X_train, maxlen=X_extra_train.shape[1])
+                X_test = pad_sequences(X_test, maxlen=X_extra_train.shape[1])
+
+        vocab_size = len(self.tokenizer.word_index) + 1
 
         class_count = 3 if ternary else 2
 
@@ -111,8 +116,6 @@ class Runner:
                 epochs=self.EPOCHS,
                 verbose=1)
             if extra_train is not None:
-                X_extra_train, Y_extra_train \
-                    = self.get_features_targets(extra_train)
                 self.model.fit(
                     X_extra_train,
                     Y_extra_train,
