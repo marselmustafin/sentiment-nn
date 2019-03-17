@@ -9,32 +9,42 @@ class DataLoader:
         "data/test/SemEval2017-task4-test.subtask-A.english.txt"]
 
     def __init__(self, preprocessor=None):
-        self.train_data = self.read_data(self.TRAIN_FILES_PATHS)
-        self.test_data = self.read_data(self.TEST_FILES_PATHS)
         self.preprocessor = preprocessor
 
-    def get_train_test(self, ternary=False):
-        train = self.train_data
-        test = self.test_data
+    def get_train_test(self, ternary=False, randomize_train=False):
+        return self.get_train(ternary=ternary, randomize=randomize_train), \
+               self.get_test(ternary=ternary)
 
+    def get_train(self, paths=None, ternary=False, randomize=False):
+        train_data = self.read_data(paths or self.TRAIN_FILES_PATHS)
+        train_set = self.get_set(train_data, ternary=ternary)
+
+        return train_set.sample(frac=1) if randomize else train_set
+
+    def get_test(self, paths=None, ternary=False):
+        test_data = self.read_data(paths or self.TEST_FILES_PATHS)
+
+        return self.get_set(test_data, ternary=ternary)
+
+    def get_set(self, data, ternary=False):
         if not ternary:
-            train = self.train_data.loc[lambda df: df.sentiment != "neutral"]
-            test = self.test_data.loc[lambda df: df.sentiment != "neutral"]
+            data = data[data.sentiment != "neutral"]
 
         if self.preprocessor:
-            train.text = self.preprocess_data(train.text)
-            test.text = self.preprocess_data(test.text)
+            data.text = self.preprocess_data(data.text)
 
-        return train.sample(frac=1), test
+        return data
 
     def read_data(self, files):
         rows = []
         for f in files:
             rows += self.parse_file(f)
-        return pd.DataFrame(data=rows, columns=["tweet_id", "sentiment", "text"])
+        return pd.DataFrame(data=rows,
+                            columns=["tweet_id", "sentiment", "text"])
 
     def preprocess_data(self, data):
-        return [" ".join(tokens) for tokens in self.preprocessor.pre_process_docs(data)]
+        return [" ".join(tokens) for tokens
+                in self.preprocessor.pre_process_docs(data)]
 
     def parse_file(self, file):
         rows = []

@@ -18,25 +18,29 @@ class Runner:
 
     def __init__(self, logger):
         self.logger = logger
+        self.tokenizer = Tokenizer(split=' ', filters="\n\t")
 
     def run(self, train, test, ternary=False, use_embeddings=False,
-            features=None, test_features=None, model=None):
-        tokenizer = Tokenizer(split=' ', filters="\n\t")
-        tokenizer.fit_on_texts(train.text.values)
-        vocab_size = len(tokenizer.word_index) + 1
+            features=None, test_features=None, model=None, extra_train=None):
+        self.tokenizer.fit_on_texts(train.text.values)
+
+        if extra_train is not None:
+            self.tokenizer.fit_on_texts(extra_train.text.values)
+
+        vocab_size = len(self.tokenizer.word_index) + 1
 
         features_dim = features.shape[1] if features is not None else None
 
-        X_train, Y_train = self.features_targets(train, tokenizer)
-        X_test, Y_test = self.features_targets(
-            test, tokenizer, features_dim=X_train.shape[1])
+        X_train, Y_train = self.get_features_targets(train)
+        X_test, Y_test = self.get_features_targets(
+            test, features_dim=X_train.shape[1])
 
         class_count = 3 if ternary else 2
 
         if use_embeddings:
             embedding_manager = EmbeddingManager()
             embedding_matrix = embedding_manager.get_embedding_matrix(
-                tokenizer.word_index, self.EMBEDDING_DIM)
+                self.tokenizer.word_index, self.EMBEDDING_DIM)
         else:
             embedding_matrix = None
 
@@ -45,7 +49,7 @@ class Runner:
                 input_dim=X_train.shape[1],
                 class_count=class_count,
                 features_dim=features_dim,
-                index_word=tokenizer.index_word,
+                index_word=self.tokenizer.index_word,
                 dropout=self.DROPOUT
             )
         elif model == "bid_attent":
@@ -82,6 +86,7 @@ class Runner:
             epochs=self.EPOCHS,
             batch_size=self.BATCH_SIZE,
             dropout=self.DROPOUT,
+            extra_train=extra_train is not None
         )
 
         self.model.summary(print_fn=self.logger.write)
@@ -105,6 +110,16 @@ class Runner:
                 callbacks=[earlystop],
                 epochs=self.EPOCHS,
                 verbose=1)
+            if extra_train is not None:
+                X_extra_train, Y_extra_train \
+                    = self.get_features_targets(extra_train)
+                self.model.fit(
+                    X_extra_train,
+                    Y_extra_train,
+                    batch_size=self.BATCH_SIZE,
+                    callbacks=[earlystop],
+                    epochs=self.EPOCHS,
+                    verbose=1)
 
             pred_classes = self.model.predict(X_test, verbose=1)
 
@@ -113,8 +128,8 @@ class Runner:
         self.print_results(pred_classes, Y_test, class_count=class_count)
         self.save_output_for_scoring(test.tweet_id, pred_classes)
 
-    def features_targets(self, dataframe, tokenizer, features_dim=None):
-        X = tokenizer.texts_to_sequences(dataframe.text.values)
+    def get_features_targets(self, dataframe, features_dim=None):
+        X = self.tokenizer.texts_to_sequences(dataframe.text.values)
         X = pad_sequences(X, maxlen=features_dim)
         Y = pd.get_dummies(dataframe.sentiment).values
 

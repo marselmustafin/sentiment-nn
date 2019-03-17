@@ -43,6 +43,8 @@ logger.write("preprocessing: %s" % (True if preprocessor else False))
 
 data_loader = DataLoader(preprocessor=preprocessor)
 train, test = data_loader.get_train_test(ternary=TERNARY)
+extra_train = data_loader.get_train(ternary=TERNARY, \
+    paths=["data/ydata-ynacc-v1_0_expert_annotations_filt.tsv"])
 
 feature_data_loader = DataLoader(preprocessor=feature_preprocessor)
 feature_extractor = FeatureExtractor(data_loader=feature_data_loader,
@@ -57,4 +59,5 @@ train_feats, test_feats = feature_extractor.get_train_test_features(
 runner.run(train, test,
            ternary=TERNARY,
            model="baseline",
-           use_embeddings=True)
+           use_embeddings=True,
+           extra_train=extra_train)

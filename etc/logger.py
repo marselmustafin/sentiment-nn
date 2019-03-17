@@ -14,7 +14,7 @@ class Logger:
         self.write("=== MODEL SETUP ===\n")
 
     def setup(self, ternary=False, embeddings=False, train_set=None,
-              test_set=None, vocab_size=0, earlystop=None,
+              test_set=None, vocab_size=0, earlystop=None, extra_train=None,
               epochs=0, batch_size=0, dropout=0):
         self.write("classification: %sry" % ("terna" if ternary else "bina"))
         self.write("Twitter embeddings: %s" % (True if embeddings else False))
@@ -27,6 +27,7 @@ class Logger:
         self.write("epochs: %s" % epochs)
         self.write("batch_size: %s" % batch_size)
         self.write("dropout: %s" % dropout)
+        self.write("extra train (ynacc): %s" % (extra_train or False))
         self.write("====================\n")
 
     def init_directory(self, path):
