@@ -37,7 +37,6 @@ class Runner:
             if X_extra_train.shape[1] > X_train.shape[1]:
                 X_train = pad_sequences(X_train, maxlen=X_extra_train.shape[1])
                 X_test = pad_sequences(X_test, maxlen=X_extra_train.shape[1])
-        import ipdb; ipdb.set_trace()  # XXX BREAKPOINT
 
         vocab_size = len(self.tokenizer.word_index) + 1
 
