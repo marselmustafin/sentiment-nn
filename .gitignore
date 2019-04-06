@@ -1,3 +1,8 @@
-__pycache__
+**/__pycache__
 scores
 *.zip
+embeddings/*.txt
+feature_extraction/corpora/*.csv
+feature_extraction/lexicons/training.1600000.processed.noemoticon.csv
+etc/sent140_import.py
+etc/sent140_pos_neg_corp_split.py

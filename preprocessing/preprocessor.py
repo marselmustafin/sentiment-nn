@@ -14,6 +14,7 @@ from preprocessing.regexp_manager import RegexpManager
     4. Stop words removing ("the", "is", "are", ...)
 """
 
+
 class TextPreprocessor:
     EMOTICONS_PATH = "preprocessing/emoticons.json"
     GENERALIZE_TYPES = ["url", "email", "percent",
@@ -50,7 +51,8 @@ class TextPreprocessor:
         return text
 
     def explain_emoticons(self, tokens):
-        return [self.emoticons[w] if w in self.emoticons else w for w in tokens]
+        return [self.emoticons[w] if w in self.emoticons else w
+                for w in tokens]
 
     def remove_stopwords(self, tokens):
         stop_words = set(stopwords.words('english'))
