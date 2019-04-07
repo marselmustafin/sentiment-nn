@@ -108,13 +108,6 @@ class Runner:
             pred_classes = self.model.predict(
                 [X_test, test_features], verbose=1)
         else:
-            self.model.fit(
-                X_train,
-                Y_train,
-                batch_size=self.BATCH_SIZE,
-                callbacks=[earlystop],
-                epochs=self.EPOCHS,
-                verbose=1)
             if extra_train is not None:
                 self.model.fit(
                     X_extra_train,
@@ -122,7 +115,16 @@ class Runner:
                     batch_size=self.BATCH_SIZE,
                     callbacks=[earlystop],
                     epochs=self.EPOCHS,
+                    validation_split=0.1,
                     verbose=1)
+            self.model.fit(
+                X_train,
+                Y_train,
+                batch_size=self.BATCH_SIZE,
+                callbacks=[earlystop],
+                epochs=self.EPOCHS,
+                validation_split=0.1,
+                verbose=1)
 
             pred_classes = self.model.predict(X_test, verbose=1)
 
