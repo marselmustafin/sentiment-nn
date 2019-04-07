@@ -5,6 +5,9 @@ from ekphrasis.classes.tokenizer import SocialTokenizer
 from ekphrasis.dicts.emoticons import emoticons
 from etc.logger import Logger
 from feature_extraction.feature_extractor import FeatureExtractor
+import numpy
+
+numpy.random.seed(1337)  # for reproducibility
 
 TERNARY = True
 
