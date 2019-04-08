@@ -1,14 +1,19 @@
 from datetime import datetime as dt
 import os
+import pickle
 
 
 class Logger:
     RESULTS_DIR = os.path.abspath("") + "/results/"
-    MODEL_SUMMARY_FILENAME = "summary.txt"
+    SUMMARY_FILENAME = "summary.txt"
+    HISTORY_FILENAME = "history{training}.txt"
 
     def __init__(self):
         self.dir = self.RESULTS_DIR + "-".join(str(dt.now()).split()) + "/"
-        self.summary_file = self.dir + self.MODEL_SUMMARY_FILENAME
+        self.summary_file = self.dir + self.SUMMARY_FILENAME
+
+        self.history_counter = 0
+        self.history_file = self.dir + self.HISTORY_FILENAME
 
         self.init_directory(self.dir)
         self.write("=== MODEL SETUP ===\n")
@@ -37,3 +42,8 @@ class Logger:
     def write(self, text):
         with open(self.summary_file, "a") as myfile:
             myfile.write(text + "\n")
+
+    def write_history(self, history):
+        with open(self.history_filename.format(training=self.history_counter),
+                  'wb') as history_file:
+            pickle.dump(history.history, history_file)
