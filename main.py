@@ -5,9 +5,17 @@ from ekphrasis.classes.tokenizer import SocialTokenizer
 from ekphrasis.dicts.emoticons import emoticons
 from etc.logger import Logger
 from feature_extraction.feature_extractor import FeatureExtractor
-import numpy
+import random as rn
+import numpy as np
+import tensorflow as tf
+import os
 
-numpy.random.seed(1337)  # for reproducibility
+# add seeds for reproducibility
+SEED = 1337
+os.environ['PYTHONHASHSEED'] = '0'
+nm.random.seed(SEED)
+rn.seed(SEED)
+tf.set_random_seed(SEED)
 
 TERNARY = True
 

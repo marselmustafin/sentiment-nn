@@ -109,7 +109,7 @@ class Runner:
                 [X_test, test_features], verbose=1)
         else:
             if extra_train is not None:
-                self.model.fit(
+                training = self.model.fit(
                     X_extra_train,
                     Y_extra_train,
                     batch_size=self.BATCH_SIZE,
@@ -117,7 +117,8 @@ class Runner:
                     epochs=self.EPOCHS,
                     validation_split=0.1,
                     verbose=1)
-            self.model.fit(
+                self.logger.write_history(training)
+            training = self.model.fit(
                 X_train,
                 Y_train,
                 batch_size=self.BATCH_SIZE,
@@ -125,6 +126,7 @@ class Runner:
                 epochs=self.EPOCHS,
                 validation_split=0.1,
                 verbose=1)
+            self.logger.write_history(training)
 
             pred_classes = self.model.predict(X_test, verbose=1)
 
