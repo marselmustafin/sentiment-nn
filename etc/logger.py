@@ -44,6 +44,7 @@ class Logger:
             myfile.write(text + "\n")
 
     def write_history(self, history):
-        with open(self.history_filename.format(training=self.history_counter),
+        with open(self.history_file.format(training=self.history_counter),
                   'wb') as history_file:
             pickle.dump(history.history, history_file)
+        self.history_counter += 1

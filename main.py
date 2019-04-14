@@ -13,7 +13,7 @@ import os
 # add seeds for reproducibility
 SEED = 1337
 os.environ['PYTHONHASHSEED'] = '0'
-nm.random.seed(SEED)
+np.random.seed(SEED)
 rn.seed(SEED)
 tf.set_random_seed(SEED)
 
