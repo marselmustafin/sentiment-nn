@@ -8,7 +8,8 @@ from embeddings.embedding_manager import EmbeddingManager
 from models.baseline_with_features import BaselineWithFeatures
 from models.elmo import ElmoModel
 from models.bidirectional_attention import BidirectionalAttention
-
+from kutilities.helpers.data_preparation import get_class_weights2, \
+     onehot_to_categories
 
 class Runner:
     EMBEDDING_DIM = 50
@@ -106,30 +107,26 @@ class Runner:
 
         self.model.summary(print_fn=self.logger.write)
 
-        if features is not None:
-            self.model.fit(
-                [X_train, features],
-                Y_train,
-                batch_size=self.batch_size,
-                callbacks=[earlystop],
-                epochs=self.epochs,
-                verbose=1)
+        fit_params = {
+            'batch_size': self.batch_size,
+            'callbacks': [earlystop],
+            'epochs': self.epochs,
+            'validation_split': 0.1,
+            'verbose': 1,
+            'class_weight': get_class_weights2(onehot_to_categories(Y_train),
+                                               smooth_factor=0)
+        }
 
+        if features is not None:
+            self.model.fit([X_train, features], Y_train, **fit_params)
             pred_classes = self.model.predict(
                 [X_test, test_features], verbose=1)
         else:
-            params = {
-                'batch_size': self.batch_size,
-                'callbacks': [earlystop],
-                'epochs': self.epochs,
-                'validation_split': 0.1,
-                'verbose': 1
-            }
             if extra_train is not None:
                 training = self.model.fit(
-                    X_extra_train, Y_extra_train, **params)
-                self.logger.write_history(training)
-            training = self.model.fit(X_train, Y_train, **params)
+                    X_extra_train, Y_extra_train, **fit_params)
+            training = self.model.fit(X_train, Y_train, **fit_params)
+            self.logger.write_history(training)
             self.logger.write_history(training)
 
             pred_classes = self.model.predict(X_test, verbose=1)
