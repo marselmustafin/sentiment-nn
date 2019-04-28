@@ -11,17 +11,26 @@ from models.bidirectional_attention import BidirectionalAttention
 
 
 class Runner:
-    EMBEDDING_DIM = 300
+    EMBEDDING_DIM = 50
     EPOCHS = 20
     BATCH_SIZE = 32
     DROPOUT = 0.5
 
-    def __init__(self, logger):
+    def __init__(self, logger, ternary=False, epochs=EPOCHS,
+                 embedding_dim=EMBEDDING_DIM, batch_size=BATCH_SIZE,
+                 dropout=DROPOUT, model=None, use_embeddings=False):
+        self.ternary = ternary
+        self.epochs = epochs
+        self.embedding_dim = embedding_dim
+        self.batch_size = batch_size
+        self.dropout = dropout
+        self.model = model
+        self.use_embeddings = use_embeddings
         self.logger = logger
         self.tokenizer = Tokenizer(split=' ', filters="\n\t")
 
-    def run(self, train, test, ternary=False, use_embeddings=False,
-            features=None, test_features=None, model=None, extra_train=None):
+    def run(self, train, test, features=None, test_features=None,
+            model=None, extra_train=None):
         self.tokenizer.fit_on_texts(train.text.values)
 
         features_dim = features.shape[1] if features is not None else None
@@ -40,57 +49,58 @@ class Runner:
 
         vocab_size = len(self.tokenizer.word_index) + 1
 
-        class_count = 3 if ternary else 2
+        class_count = 3 if self.ternary else 2
 
-        if use_embeddings:
+        embedding_matrix = None
+
+        if self.use_embeddings:
             embedding_manager = EmbeddingManager()
             embedding_matrix = embedding_manager.get_embedding_matrix(
-                self.tokenizer.word_index, self.EMBEDDING_DIM)
-        else:
-            embedding_matrix = None
+                self.tokenizer.word_index, self.embedding_dim)
+
+        base_model_params = {
+            'input_dim': X_train.shape[1],
+            'class_count': class_count,
+            'features_dim': features_dim,
+            'dropout': self.dropout
+        }
 
         if model == "elmo":
-            self.model = ElmoModel().compile(
-                input_dim=X_train.shape[1],
-                class_count=class_count,
-                features_dim=features_dim,
-                index_word=self.tokenizer.index_word,
-                dropout=self.DROPOUT
-            )
+            params = {
+                **base_model_params,
+                'index_word': self.tokenizer.index_word
+            }
+            self.model = ElmoModel().compile(**params)
         elif model == "bid_attent":
-            self.model = BidirectionalAttention().compile(
-                vocab_size=vocab_size,
-                input_dim=X_train.shape[1],
-                class_count=class_count,
-                features_dim=features_dim,
-                embedding_matrix=embedding_matrix,
-                embedding_dim=self.EMBEDDING_DIM,
-                dropout=self.DROPOUT
-            )
+            params = {
+                **base_model_params,
+                'vocab_size': vocab_size,
+                'embedding_matrix': embedding_matrix,
+                'embedding_dim': self.embedding_dim
+            }
+            self.model = BidirectionalAttention().compile(**params)
         else:
-            self.model = BaselineWithFeatures().compile(
-                vocab_size=vocab_size,
-                input_dim=X_train.shape[1],
-                class_count=class_count,
-                features_dim=features_dim,
-                embedding_matrix=embedding_matrix,
-                embedding_dim=self.EMBEDDING_DIM,
-                dropout=self.DROPOUT
-            )
+            params = {
+                **base_model_params,
+                'vocab_size': vocab_size,
+                'embedding_matrix': embedding_matrix,
+                'embedding_dim': self.embedding_dim
+            }
+            self.model = BaselineWithFeatures().compile(**params)
 
         earlystop = EarlyStopping(monitor='loss', min_delta=0.01, patience=2,
                                   verbose=1, mode='auto')
 
         self.logger.setup(
-            ternary=ternary,
-            embeddings=use_embeddings,
+            ternary=self.ternary,
+            embeddings=self.use_embeddings,
             train_set=X_train,
             test_set=X_test,
             vocab_size=vocab_size,
             earlystop=earlystop,
-            epochs=self.EPOCHS,
-            batch_size=self.BATCH_SIZE,
-            dropout=self.DROPOUT,
+            epochs=self.epochs,
+            batch_size=self.batch_size,
+            dropout=self.dropout,
             extra_train=extra_train is not None
         )
 
@@ -100,32 +110,26 @@ class Runner:
             self.model.fit(
                 [X_train, features],
                 Y_train,
-                batch_size=self.BATCH_SIZE,
+                batch_size=self.batch_size,
                 callbacks=[earlystop],
-                epochs=self.EPOCHS,
+                epochs=self.epochs,
                 verbose=1)
 
             pred_classes = self.model.predict(
                 [X_test, test_features], verbose=1)
         else:
+            params = {
+                'batch_size': self.batch_size,
+                'callbacks': [earlystop],
+                'epochs': self.epochs,
+                'validation_split': 0.1,
+                'verbose': 1
+            }
             if extra_train is not None:
                 training = self.model.fit(
-                    X_extra_train,
-                    Y_extra_train,
-                    batch_size=self.BATCH_SIZE,
-                    callbacks=[earlystop],
-                    epochs=self.EPOCHS,
-                    validation_split=0.1,
-                    verbose=1)
+                    X_extra_train, Y_extra_train, **params)
                 self.logger.write_history(training)
-            training = self.model.fit(
-                X_train,
-                Y_train,
-                batch_size=self.BATCH_SIZE,
-                callbacks=[earlystop],
-                epochs=self.EPOCHS,
-                validation_split=0.1,
-                verbose=1)
+            training = self.model.fit(X_train, Y_train, **params)
             self.logger.write_history(training)
 
             pred_classes = self.model.predict(X_test, verbose=1)
