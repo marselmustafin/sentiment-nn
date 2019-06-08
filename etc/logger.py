@@ -8,8 +8,8 @@ class Logger:
     SUMMARY_FILENAME = "summary.txt"
     HISTORY_FILENAME = "history{training}.txt"
 
-    def __init__(self, dir=RESULTS_DIR):
-        self.dir = self.RESULTS_DIR + "-".join(str(dt.now()).split()) + "/"
+    def __init__(self, results_dir=RESULTS_DIR):
+        self.dir = results_dir + "-".join(str(dt.now()).split()) + "/"
         self.summary_file = self.dir + self.SUMMARY_FILENAME
 
         self.history_counter = 0
