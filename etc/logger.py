@@ -19,16 +19,13 @@ class Logger:
         self.write("=== MODEL SETUP ===\n")
 
     def setup(self, ternary=False, embeddings=False, train_set=None,
-              test_set=None, vocab_size=0, earlystop=None, extra_train=None,
+              test_set=None, vocab_size=0, extra_train=None,
               epochs=0, batch_size=0, dropout=0):
         self.write("classification: %sry" % ("terna" if ternary else "bina"))
         self.write("Twitter embeddings: %s" % (True if embeddings else False))
         self.write("Train set size: %s" % len(train_set))
         self.write("Test set size: %s" % len(test_set))
         self.write("Vocabulary size: %s" % vocab_size)
-        self.write("earlystop | monitor: {0}, min_delta: {1}, patience: {2}"
-                   .format(earlystop.monitor, earlystop.min_delta,
-                           earlystop.patience))
         self.write("epochs: %s" % epochs)
         self.write("batch_size: %s" % batch_size)
         self.write("dropout: %s" % dropout)

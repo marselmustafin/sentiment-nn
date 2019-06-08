@@ -91,7 +91,6 @@ class Runner:
             train_set=X_train,
             test_set=X_test,
             vocab_size=vocab_size,
-            earlystop=earlystop,
             epochs=self.epochs,
             batch_size=self.batch_size,
             dropout=self.dropout,
@@ -118,8 +117,8 @@ class Runner:
             if extra_train is not None:
                 training = self.model.fit(
                     X_extra_train, Y_extra_train, **fit_params)
+                self.logger.write_history(training)
             training = self.model.fit(X_train, Y_train, **fit_params)
-            self.logger.write_history(training)
             self.logger.write_history(training)
 
             pred_classes = self.model.predict(X_test, verbose=1)
@@ -132,9 +131,9 @@ class Runner:
     def get_callbacks(self):
         earlystop = EarlyStopping(monitor='loss', min_delta=0.01, patience=2,
                                   verbose=1, mode='auto')
-        plotting = PlottingCallback(grid_ranges=(0.5, 0.75), height=5,
-                            benchmarks={"SE17": 0.681})
-        return [earlystop, plotting]
+        # plotting = PlottingCallback(grid_ranges=(0.5, 0.75), height=5,
+        #                     benchmarks={"SE17": 0.681})
+        return [earlystop]
 
     def get_features_targets(self, dataframe, features_dim=None):
         X = self.tokenizer.texts_to_sequences(dataframe.text.values)
