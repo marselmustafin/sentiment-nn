@@ -12,14 +12,10 @@ from kutilities.helpers.data_preparation import get_class_weights2, \
      onehot_to_categories
 
 class Runner:
-    EMBEDDING_DIM = 50
-    EPOCHS = 20
-    BATCH_SIZE = 32
-    DROPOUT = 0.5
-
-    def __init__(self, logger, ternary=False, epochs=EPOCHS,
-                 embedding_dim=EMBEDDING_DIM, batch_size=BATCH_SIZE,
-                 dropout=DROPOUT, model=None, use_embeddings=False):
+    def __init__(self, logger, ternary=False, epochs=20,
+                 embedding_dim=50, batch_size=32,
+                 dropout=0.5, model=None, use_embeddings=False):
+        assert model in ["elmo", "baseline", "bid_attent"]
         self.ternary = ternary
         self.epochs = epochs
         self.embedding_dim = embedding_dim

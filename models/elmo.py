@@ -7,7 +7,7 @@ from layers.elmo_layer import ELMoEmbedding
 class ElmoModel(object):
     LSTM_OUT_DIM = 1024
     KERNEL_SIZES = [2, 3, 5]
-    DROPOUT = 0.6
+    DROPOUT = 0.4
     HIDDEN_DIMS = 50
     NUM_FILTERS = 64
 
@@ -31,14 +31,12 @@ class ElmoModel(object):
 
         conv_conc = Concatenate()(conv_blocks)
 
-        drop = Dropout(self.DROPOUT, seed=123)(conv_conc)
-
         hidden_dense = Dense(self.HIDDEN_DIMS, activation="relu")(drop)
 
         final = Dense(class_count, activation='softmax')(hidden_dense)
 
         model = Model(inputs=[main_input], outputs=final)
 
-        model.compile(loss='binary_crossentropy', optimizer='adam')
+        model.compile(loss='categorical_crossentropy', optimizer='adam')
 
         return model
