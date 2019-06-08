@@ -14,20 +14,19 @@ from kutilities.helpers.data_preparation import get_class_weights2, \
 class Runner:
     def __init__(self, logger, ternary=False, epochs=20,
                  embedding_dim=50, batch_size=32,
-                 dropout=0.5, model=None, use_embeddings=False):
-        assert model in ["elmo", "baseline", "bid_attent"]
+                 dropout=0.5, model_type=None, use_embeddings=False):
+        assert model_type in ["elmo", "baseline", "bid_attent"]
         self.ternary = ternary
         self.epochs = epochs
         self.embedding_dim = embedding_dim
         self.batch_size = batch_size
         self.dropout = dropout
-        self.model = model
+        self.model_type = model_type
         self.use_embeddings = use_embeddings
         self.logger = logger
         self.tokenizer = Tokenizer(split=' ', filters="\n\t")
 
-    def run(self, train, test, features=None, test_features=None,
-            model=None, extra_train=None):
+    def run(self, train, test, features=None, test_features=None, extra_train=None):
         self.tokenizer.fit_on_texts(train.text.values)
 
         features_dim = features.shape[1] if features is not None else None
@@ -62,13 +61,13 @@ class Runner:
             'dropout': self.dropout
         }
 
-        if model == "elmo":
+        if self.model_type == "elmo":
             params = {
                 **base_model_params,
                 'index_word': self.tokenizer.index_word
             }
             self.model = ElmoModel().compile(**params)
-        elif model == "bid_attent":
+        elif self.model_type == "bid_attent":
             params = {
                 **base_model_params,
                 'vocab_size': vocab_size,

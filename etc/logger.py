@@ -36,8 +36,7 @@ class Logger:
         self.write("====================\n")
 
     def init_directory(self, path):
-        command = "mkdir -p %s" % path
-        return os.system(command)
+        os.makedirs(path)
 
     def write(self, text):
         with open(self.summary_file, "a") as myfile:

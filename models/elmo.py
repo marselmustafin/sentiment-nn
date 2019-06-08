@@ -31,7 +31,7 @@ class ElmoModel(object):
 
         conv_conc = Concatenate()(conv_blocks)
 
-        hidden_dense = Dense(self.HIDDEN_DIMS, activation="relu")(drop)
+        hidden_dense = Dense(self.HIDDEN_DIMS, activation="relu")(conv_conc)
 
         final = Dense(class_count, activation='softmax')(hidden_dense)
 

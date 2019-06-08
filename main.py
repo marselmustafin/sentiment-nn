@@ -48,7 +48,7 @@ feature_preprocessor = TextPreProcessor(
 
 logger = Logger()
 runner = Runner(logger=logger, ternary=TERNARY,
-                model='baseline', use_embeddings=True)
+                model_type='baseline', use_embeddings=True)
 
 logger.write('preprocessing: %s' % (True if preprocessor else False))
 
