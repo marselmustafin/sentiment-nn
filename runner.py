@@ -13,13 +13,14 @@ from kutilities.helpers.data_preparation import get_class_weights2, \
 
 class Runner:
     def __init__(self, logger, ternary=False, epochs=20,
-                 embedding_dim=50, batch_size=32,
+                 embedding_dim=50, batch_size=32, validation_split=0.1,
                  dropout=0.5, model_type=None, use_embeddings=False):
         assert model_type in ["elmo", "baseline", "bid_attent"]
         self.ternary = ternary
         self.epochs = epochs
         self.embedding_dim = embedding_dim
         self.batch_size = batch_size
+        self.validation_split = validation_split
         self.dropout = dropout
         self.model_type = model_type
         self.use_embeddings = use_embeddings
@@ -84,9 +85,6 @@ class Runner:
             }
             self.model = BaselineWithFeatures().compile(**params)
 
-        earlystop = EarlyStopping(monitor='loss', min_delta=0.01, patience=2,
-                                  verbose=1, mode='auto')
-
         self.logger.setup(
             ternary=self.ternary,
             embeddings=self.use_embeddings,
@@ -104,9 +102,9 @@ class Runner:
 
         fit_params = {
             'batch_size': self.batch_size,
-            'callbacks': [earlystop],
+            'callbacks': self.get_callbacks(),
             'epochs': self.epochs,
-            'validation_split': 0.1,
+            'validation_split': self.validation_split,
             'verbose': 1,
             'class_weight': get_class_weights2(onehot_to_categories(Y_train),
                                                smooth_factor=0)
@@ -130,6 +128,13 @@ class Runner:
 
         self.print_results(pred_classes, Y_test, class_count=class_count)
         self.save_output_for_scoring(test.tweet_id, pred_classes)
+
+    def get_callbacks(self):
+        earlystop = EarlyStopping(monitor='loss', min_delta=0.01, patience=2,
+                                  verbose=1, mode='auto')
+        plotting = PlottingCallback(grid_ranges=(0.5, 0.75), height=5,
+                            benchmarks={"SE17": 0.681})
+        return [earlystop, plotting]
 
     def get_features_targets(self, dataframe, features_dim=None):
         X = self.tokenizer.texts_to_sequences(dataframe.text.values)
