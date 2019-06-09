@@ -37,6 +37,7 @@ class ElmoModel(object):
 
         model = Model(inputs=[main_input], outputs=final)
 
-        model.compile(loss='categorical_crossentropy', optimizer='adam')
+        model.compile(loss='categorical_crossentropy', optimizer='adam',
+                      metrics=['accuracy'])
 
         return model

@@ -27,9 +27,11 @@ class BidirectionalAttention(object):
 
         gn = GaussianNoise(0.3)(emb)
         drop1 = Dropout(0.3, seed=123)(emb)
-        lstm1 = Bidirectional(LSTM(self.LSTM_OUT_DIM, return_sequences=True))(drop1)
+        lstm1 = Bidirectional(LSTM(self.LSTM_OUT_DIM,
+                                   return_sequences=True))(drop1)
         drop2 = Dropout(0.3, seed=123)(lstm1)
-        lstm2 = Bidirectional(LSTM(self.LSTM_OUT_DIM, return_sequences=True))(drop2)
+        lstm2 = Bidirectional(LSTM(self.LSTM_OUT_DIM,
+                                   return_sequences=True))(drop2)
         drop3 = Dropout(0.3, seed=123)(lstm2)
         attention = Attention()(drop3)
         drop4 = Dropout(0.5, seed=123)(attention)
@@ -43,10 +45,11 @@ class BidirectionalAttention(object):
             final = Dense(class_count, activation='softmax')(dense)
             model = Model(inputs=[main_input, features_input], outputs=final)
         else:
-            final = Dense(class_count, activation='softmax', activity_regularizer=l2(0.0001))(drop4)
+            final = Dense(class_count, activation='softmax',
+                          activity_regularizer=l2(0.0001))(drop4)
             model = Model(inputs=[main_input], outputs=final)
 
         model.compile(optimizer=Adam(clipnorm=1, lr=0.001),
-                      loss='categorical_crossentropy')
+                      loss='categorical_crossentropy', metrics=['accuracy'])
 
         return model

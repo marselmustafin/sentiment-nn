@@ -27,7 +27,8 @@ class Runner:
         self.logger = logger
         self.tokenizer = Tokenizer(split=' ', filters="\n\t")
 
-    def run(self, train, test, features=None, test_features=None, extra_train=None):
+    def run(self, train, test, features=None, test_features=None,
+            extra_train=None, callbacks=True):
         self.tokenizer.fit_on_texts(train.text.values)
 
         features_dim = features.shape[1] if features is not None else None
@@ -101,7 +102,7 @@ class Runner:
 
         fit_params = {
             'batch_size': self.batch_size,
-            'callbacks': self.get_callbacks(),
+            'callbacks': self.get_callbacks() if callbacks else [],
             'epochs': self.epochs,
             'validation_split': self.validation_split,
             'verbose': 1,
@@ -109,22 +110,18 @@ class Runner:
                                                smooth_factor=0)
         }
 
-        if features is not None:
-            self.model.fit([X_train, features], Y_train, **fit_params)
-            pred_classes = self.model.predict(
-                [X_test, test_features], verbose=1)
-        else:
-            if extra_train is not None:
-                training = self.model.fit(
-                    X_extra_train, Y_extra_train, **fit_params)
-                self.logger.write_history(training)
-            training = self.model.fit(X_train, Y_train, **fit_params)
+        if extra_train is not None:
+            training = self.model.fit(
+                X_extra_train, Y_extra_train, **fit_params)
             self.logger.write_history(training)
 
-            pred_classes = self.model.predict(X_test, verbose=1)
+        train_input = [X_train, features] if features is not None else X_train
+        test_input = [X_test, test_features] if features is not None else X_test
 
-        pred_classes = pred_classes.argmax(axis=1)
+        training = self.model.fit(train_input, Y_train, **fit_params)
+        pred_classes = self.model.predict(test_input, verbose=1).argmax(axis=1)
 
+        self.logger.write_history(training)
         self.print_results(pred_classes, Y_test, class_count=class_count)
         self.save_output_for_scoring(test.tweet_id, pred_classes)
 
