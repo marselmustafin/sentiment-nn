@@ -63,8 +63,8 @@ feature_extractor = FeatureExtractor(data_loader=feature_data_loader,
 
 train_feats, test_feats = feature_extractor.get_train_test_features(
     ternary=TERNARY,
-    manual=False,
-    auto=False,
+    manual=True,
+    auto=True,
     scaled=False)
 
 runner.run(train, test, extra_train=extra_train)

@@ -49,5 +49,5 @@ class NegationMarker():
     def non_negotiable_part(self, token):
         return self.back_off_tag.match(token) \
             or token in punctuation \
-            or self.num.match(token) \
-            or token in set(stopwords.words("english"))
+            or self.num.match(token)
+            # or token in set(stopwords.words("english"))
